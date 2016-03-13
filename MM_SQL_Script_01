@@ -1,0 +1,110 @@
+Use final
+
+Drop Table PaymentDetailGeneralALL;
+
+Create Table PaymentDetailGeneralALL
+(CoveredRecipientType varchar(255)
+,TeachingHospitalID varchar(255)
+,TeachingHospitalName varchar(255)
+,PhysicianProfileID varchar(255)
+,PhysicianFirstName varchar(255)
+,PhysicianMiddleName varchar(255)
+,PhysicianLastName varchar(255)
+,PhysicianNameSuffix varchar(255)
+,RecipientPrimaryBusinessStreetAddressLine1 varchar(255)
+,RecipientPrimaryBusinessStreetAddressLine2 varchar(255)
+,RecipientCity varchar(255)
+,RecipientState varchar(255)
+,RecipientZipCode varchar(255)
+,RecipientCountry varchar(255)
+,RecipientProvince varchar(255)
+,RecipientPostalCode varchar(255)
+,PhysicianPrimaryType varchar(255)
+,PhysicianSpecialty varchar(255)
+,SubmittingApplicableManufacturerOrApplicableGPOName varchar(255)
+,ApplicableManufacturerOrApplicableGPOMakingPaymentID varchar(255)
+,ApplicableManufacturerOrApplicableGPOMakingPaymentName varchar(255)
+,TotalAmountOfPaymentUSDollars varchar(255)
+,DateOfPayment datetime
+,NumberOfPaymentsIncludedInTotalAmount int
+,NatureOfPaymentOrTransferOfValue varchar(255)
+,CityOfTravel varchar(255)
+,RecordID varchar(255)
+,ProductIndicator varchar(255)
+,NameOfAssociatedCoveredDrugOrBiological1 varchar(255)
+,NameOfAssociatedCoveredDrugOrBiological2 varchar(255)
+,NameOfAssociatedCoveredDrugOrBiological3 varchar(255)
+,NameOfAssociatedCoveredDrugOrBiological4 varchar(255));
+
+Select 
+CoveredRecipientType
+,TeachingHospitalID
+,TeachingHospitalName
+,PhysicianProfileID
+,PhysicianFirstName
+,PhysicianMiddleName
+,PhysicianLastName
+,PhysicianNameSuffix
+,RecipientPrimaryBusinessStreetAddressLine1
+,RecipientPrimaryBusinessStreetAddressLine2
+,RecipientCity
+,RecipientState
+,RecipientZipCode
+,RecipientCountry
+,RecipientProvince
+,RecipientPostalCode
+,PhysicianPrimaryType
+,PhysicianSpecialty
+,SubmittingApplicableManufacturerOrApplicableGPOName
+,ApplicableManufacturerOrApplicableGPOMakingPaymentID
+,ApplicableManufacturerOrApplicableGPOMakingPaymentName
+,TotalAmountOfPaymentUSDollars
+,DateOfPayment
+,NumberOfPaymentsIncludedInTotalAmount
+,NatureOfPaymentOrTransferOfValue
+,CityOfTravel
+,RecordID
+,ProductIndicator
+,NameOfAssociatedCoveredDrugOrBiological1
+,NameOfAssociatedCoveredDrugOrBiological2
+,NameOfAssociatedCoveredDrugOrBiological3
+,NameOfAssociatedCoveredDrugOrBiological4
+From PaymentDetailGeneral2013
+
+union 
+
+Select 
+CoveredRecipientType
+,TeachingHospitalID
+,TeachingHospitalName
+,PhysicianProfileID
+,PhysicianFirstName
+,PhysicianMiddleName
+,PhysicianLastName
+,PhysicianNameSuffix
+,RecipientPrimaryBusinessStreetAddressLine1
+,RecipientPrimaryBusinessStreetAddressLine2
+,RecipientCity
+,RecipientState
+,RecipientZipCode
+,RecipientCountry
+,RecipientProvince
+,RecipientPostalCode
+,PhysicianPrimaryType
+,PhysicianSpecialty
+,SubmittingApplicableManufacturerOrApplicableGPOName
+,ApplicableManufacturerOrApplicableGPOMakingPaymentID
+,ApplicableManufacturerOrApplicableGPOMakingPaymentName
+,TotalAmountOfPaymentUSDollars
+,DateOfPayment
+,NumberOfPaymentsIncludedInTotalAmount
+,NatureOfPaymentOrTransferOfValue
+,CityOfTravel
+,RecordID
+,ProductIndicator
+,NameOfAssociatedCoveredDrugOrBiological1
+,NameOfAssociatedCoveredDrugOrBiological2
+,NameOfAssociatedCoveredDrugOrBiological3
+,NameOfAssociatedCoveredDrugOrBiological4
+into PaymentDetailGeneralALL
+From PaymentDetailGeneral2014
