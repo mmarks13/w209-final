@@ -70,7 +70,7 @@ insert into PaymentDetailGeneralALL (CoveredRecipientType
 ,NameOfAssociatedCoveredDrugOrBiological2
 ,NameOfAssociatedCoveredDrugOrBiological3
 ,NameOfAssociatedCoveredDrugOrBiological4) VALUES
-SELECT
+(SELECT
 CoveredRecipientType
 ,TeachingHospitalID
 ,TeachingHospitalName
@@ -140,7 +140,7 @@ CoveredRecipientType
 ,NameOfAssociatedCoveredDrugOrBiological2
 ,NameOfAssociatedCoveredDrugOrBiological3
 ,NameOfAssociatedCoveredDrugOrBiological4
-From PaymentDetailGeneral2014
+From PaymentDetailGeneral2014);
 
 
 
