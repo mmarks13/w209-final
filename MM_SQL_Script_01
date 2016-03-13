@@ -38,38 +38,7 @@ Create Table PaymentDetailGeneralALL
 
 
 
-insert into PaymentDetailGeneralALL (CoveredRecipientType
-,TeachingHospitalID
-,TeachingHospitalName
-,PhysicianProfileID
-,PhysicianFirstName
-,PhysicianMiddleName
-,PhysicianLastName
-,PhysicianNameSuffix
-,RecipientPrimaryBusinessStreetAddressLine1
-,RecipientPrimaryBusinessStreetAddressLine2
-,RecipientCity
-,RecipientState
-,RecipientZipCode
-,RecipientCountry
-,RecipientProvince
-,RecipientPostalCode
-,PhysicianPrimaryType
-,PhysicianSpecialty
-,SubmittingApplicableManufacturerOrApplicableGPOName
-,ApplicableManufacturerOrApplicableGPOMakingPaymentID
-,ApplicableManufacturerOrApplicableGPOMakingPaymentName
-,TotalAmountOfPaymentUSDollars
-,DateOfPayment
-,NumberOfPaymentsIncludedInTotalAmount
-,NatureOfPaymentOrTransferOfValue
-,CityOfTravel
-,RecordID
-,ProductIndicator
-,NameOfAssociatedCoveredDrugOrBiological1
-,NameOfAssociatedCoveredDrugOrBiological2
-,NameOfAssociatedCoveredDrugOrBiological3
-,NameOfAssociatedCoveredDrugOrBiological4) VALUES
+insert into PaymentDetailGeneralALL VALUES
 (SELECT
 CoveredRecipientType
 ,TeachingHospitalID
