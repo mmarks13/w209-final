@@ -1,6 +1,6 @@
 Use final;
 
-Drop Table PaymentDetailGeneralALL;
+DROP TABLE IF EXISTS PaymentDetailGeneralALL;
 
 Create Table PaymentDetailGeneralALL
 (CoveredRecipientType varchar(255)
