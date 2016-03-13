@@ -1,4 +1,4 @@
-Use final
+Use final;
 
 Drop Table PaymentDetailGeneralALL;
 
@@ -108,3 +108,9 @@ CoveredRecipientType
 ,NameOfAssociatedCoveredDrugOrBiological4
 into PaymentDetailGeneralALL
 From PaymentDetailGeneral2014
+
+
+
+
+
+ALTER TABLE PaymentDetailGeneralALL ADD INDEX (B)
