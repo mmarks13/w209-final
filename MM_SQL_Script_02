@@ -42,7 +42,7 @@ SELECT DISTINCT Physician_Profile_ID
 ,PhysicianLicenseStateCode2
 ,PhysicianLicenseStateCode3
 ,PhysicianLicenseStateCode4
-FROM PaymentDetailGeneralALL
+FROM PaymentDetailGeneralALL;
 
 
 
