@@ -23,10 +23,10 @@ Create Table PaymentDetailGeneralALL
 ,RecipientPostalCode varchar(255)
 ,PhysicianPrimaryType varchar(255)
 ,PhysicianSpecialty varchar(255)
-,Physician_License_State_code1 varchar(10)
-,Physician_License_State_code2 varchar(10)
-,Physician_License_State_code3 varchar(10)
-,Physician_License_State_code4 varchar(10)
+,PhysicianLicenseStateCode1 varchar(10)
+,PhysicianLicenseStateCode2 varchar(10)
+,PhysicianLicenseStateCode3 varchar(10)
+,PhysicianLicenseStateCode4 varchar(10)
 ,SubmittingApplicableManufacturerOrApplicableGPOName varchar(255)
 ,ApplicableManufacturerOrApplicableGPOMakingPaymentID varchar(255)
 ,ApplicableManufacturerOrApplicableGPOMakingPaymentName varchar(255)
@@ -62,10 +62,10 @@ TeachingHospitalID
 ,RecipientPostalCode
 ,PhysicianPrimaryType
 ,PhysicianSpecialty
-,Physician_License_State_code1
-,Physician_License_State_code2
-,Physician_License_State_code3
-,Physician_License_State_code4
+,PhysicianLicenseStateCode1
+,PhysicianLicenseStateCode2
+,PhysicianLicenseStateCode3
+,PhysicianLicenseStateCode4
 ,SubmittingApplicableManufacturerOrApplicableGPOName
 ,ApplicableManufacturerOrApplicableGPOMakingPaymentID
 ,ApplicableManufacturerOrApplicableGPOMakingPaymentName
@@ -98,10 +98,10 @@ TeachingHospitalID
 ,RecipientPostalCode
 ,PhysicianPrimaryType
 ,PhysicianSpecialty
-,Physician_License_State_code1
-,Physician_License_State_code2
-,Physician_License_State_code3
-,Physician_License_State_code4
+,PhysicianLicenseStateCode1
+,PhysicianLicenseStateCode2
+,PhysicianLicenseStateCode3
+,PhysicianLicenseStateCode4
 ,SubmittingApplicableManufacturerOrApplicableGPOName
 ,ApplicableManufacturerOrApplicableGPOMakingPaymentID
 ,ApplicableManufacturerOrApplicableGPOMakingPaymentName
@@ -138,10 +138,10 @@ TeachingHospitalID
 ,RecipientPostalCode
 ,PhysicianPrimaryType
 ,PhysicianSpecialty
-,Physician_License_State_code1
-,Physician_License_State_code2
-,Physician_License_State_code3
-,Physician_License_State_code4
+,PhysicianLicenseStateCode1
+,PhysicianLicenseStateCode2
+,PhysicianLicenseStateCode3
+,PhysicianLicenseStateCode4
 ,SubmittingApplicableManufacturerOrApplicableGPOName
 ,ApplicableManufacturerOrApplicableGPOMakingPaymentID
 ,ApplicableManufacturerOrApplicableGPOMakingPaymentName
