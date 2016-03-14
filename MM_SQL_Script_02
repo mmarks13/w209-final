@@ -1,5 +1,8 @@
 # This hacks together a physician lookup table. It ignores potential duplicates
 
+Use final;
+
+DROP TABLE IF EXISTS Physician_Lookup;
 
 CREATE TABLE Physician_Lookup 
 (pk_Physician_ID int UNSIGNED NOT NULL AUTO_INCREMENT,
