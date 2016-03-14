@@ -1,0 +1,47 @@
+# This hacks together a physician lookup table. It ignores potential duplicates
+
+
+CREATE TABLE Physician_Lookup 
+(pk_Physician_ID int UNSIGNED NOT NULL AUTO_INCREMENT,
+,PhysicianProfileID varchar(255)
+,PhysicianFirstName varchar(255)
+,PhysicianMiddleName varchar(255)
+,PhysicianLastName varchar(255)
+,PhysicianNameSuffix varchar(255)
+,PhysicianPrimaryType varchar(255)
+,PhysicianSpecialty varchar(255)
+,Physician_License_State_code1 varchar(10)
+,Physician_License_State_code2 varchar(10)
+,Physician_License_State_code3 varchar(10)
+,Physician_License_State_code4 varchar(10)
+);
+
+insert into Physician_Lookup (Physician_Profile_ID
+,Physician_First_Name
+,Physician_Middle_Name
+,Physician_Last_Name
+,Physician_Name_Suffix
+,Physician_Primary_Type
+,Physician_Specialty
+,Physician_License_State_code1
+,Physician_License_State_code2
+,Physician_License_State_code3
+,Physician_License_State_code4)
+
+SELECT DISTINCT Physician_Profile_ID
+,Physician_First_Name
+,Physician_Middle_Name
+,Physician_Last_Name
+,Physician_Name_Suffix
+,Physician_Primary_Type
+,Physician_Specialty
+,Physician_License_State_code1
+,Physician_License_State_code2
+,Physician_License_State_code3
+,Physician_License_State_code4
+FROM PaymentDetailGeneralALL
+
+
+
+
+

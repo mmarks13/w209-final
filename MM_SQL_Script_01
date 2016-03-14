@@ -1,10 +1,12 @@
+# This script creates a table called PaymentDetailGeneralALL and combines the 2013 and 2014 data into it.
+# Some columns are dropped before unioning the tables. 
+
 Use final;
 
 DROP TABLE IF EXISTS PaymentDetailGeneralALL;
 
 Create Table PaymentDetailGeneralALL
-(CoveredRecipientType varchar(255)
-,TeachingHospitalID varchar(255)
+(TeachingHospitalID varchar(255)
 ,TeachingHospitalName varchar(255)
 ,PhysicianProfileID varchar(255)
 ,PhysicianFirstName varchar(255)
@@ -21,6 +23,10 @@ Create Table PaymentDetailGeneralALL
 ,RecipientPostalCode varchar(255)
 ,PhysicianPrimaryType varchar(255)
 ,PhysicianSpecialty varchar(255)
+,Physician_License_State_code1 varchar(10)
+,Physician_License_State_code2 varchar(10)
+,Physician_License_State_code3 varchar(10)
+,Physician_License_State_code4 varchar(10)
 ,SubmittingApplicableManufacturerOrApplicableGPOName varchar(255)
 ,ApplicableManufacturerOrApplicableGPOMakingPaymentID varchar(255)
 ,ApplicableManufacturerOrApplicableGPOMakingPaymentName varchar(255)
@@ -38,8 +44,8 @@ Create Table PaymentDetailGeneralALL
 
 
 
-insert into PaymentDetailGeneralALL (CoveredRecipientType
-,TeachingHospitalID
+insert into PaymentDetailGeneralALL (
+TeachingHospitalID
 ,TeachingHospitalName
 ,PhysicianProfileID
 ,PhysicianFirstName
@@ -56,6 +62,10 @@ insert into PaymentDetailGeneralALL (CoveredRecipientType
 ,RecipientPostalCode
 ,PhysicianPrimaryType
 ,PhysicianSpecialty
+,Physician_License_State_code1
+,Physician_License_State_code2
+,Physician_License_State_code3
+,Physician_License_State_code4
 ,SubmittingApplicableManufacturerOrApplicableGPOName
 ,ApplicableManufacturerOrApplicableGPOMakingPaymentID
 ,ApplicableManufacturerOrApplicableGPOMakingPaymentName
@@ -71,8 +81,7 @@ insert into PaymentDetailGeneralALL (CoveredRecipientType
 ,NameOfAssociatedCoveredDrugOrBiological3
 ,NameOfAssociatedCoveredDrugOrBiological4) 
 SELECT
-CoveredRecipientType
-,TeachingHospitalID
+TeachingHospitalID
 ,TeachingHospitalName
 ,PhysicianProfileID
 ,PhysicianFirstName
@@ -89,6 +98,10 @@ CoveredRecipientType
 ,RecipientPostalCode
 ,PhysicianPrimaryType
 ,PhysicianSpecialty
+,Physician_License_State_code1
+,Physician_License_State_code2
+,Physician_License_State_code3
+,Physician_License_State_code4
 ,SubmittingApplicableManufacturerOrApplicableGPOName
 ,ApplicableManufacturerOrApplicableGPOMakingPaymentID
 ,ApplicableManufacturerOrApplicableGPOMakingPaymentName
@@ -108,8 +121,7 @@ From PaymentDetailGeneral2013
 union 
 
 Select 
-CoveredRecipientType
-,TeachingHospitalID
+TeachingHospitalID
 ,TeachingHospitalName
 ,PhysicianProfileID
 ,PhysicianFirstName
@@ -126,6 +138,10 @@ CoveredRecipientType
 ,RecipientPostalCode
 ,PhysicianPrimaryType
 ,PhysicianSpecialty
+,Physician_License_State_code1
+,Physician_License_State_code2
+,Physician_License_State_code3
+,Physician_License_State_code4
 ,SubmittingApplicableManufacturerOrApplicableGPOName
 ,ApplicableManufacturerOrApplicableGPOMakingPaymentID
 ,ApplicableManufacturerOrApplicableGPOMakingPaymentName
@@ -141,9 +157,6 @@ CoveredRecipientType
 ,NameOfAssociatedCoveredDrugOrBiological3
 ,NameOfAssociatedCoveredDrugOrBiological4
 From PaymentDetailGeneral2014;
-
-
-
 
 
 ALTER TABLE PaymentDetailGeneralALL ADD INDEX (PhysicianProfileID)
