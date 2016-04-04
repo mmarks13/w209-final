@@ -40,7 +40,11 @@ Create Table PaymentDetailGeneralALL
 ,NameOfAssociatedCoveredDrugOrBiological1 varchar(255)
 ,NameOfAssociatedCoveredDrugOrBiological2 varchar(255)
 ,NameOfAssociatedCoveredDrugOrBiological3 varchar(255)
-,NameOfAssociatedCoveredDrugOrBiological4 varchar(255));
+,NameOfAssociatedCoveredDrugOrBiological4 varchar(255)
+,NDCOfAssociatedCoveredDrugOrBiological1 varchar(255)
+,NDCOfAssociatedCoveredDrugOrBiological2 varchar(255)
+,NDCOfAssociatedCoveredDrugOrBiological3 varchar(255)
+,NDCOfAssociatedCoveredDrugOrBiological4 varchar(255));
 
 
 
@@ -79,7 +83,11 @@ TeachingHospitalID
 ,NameOfAssociatedCoveredDrugOrBiological1
 ,NameOfAssociatedCoveredDrugOrBiological2
 ,NameOfAssociatedCoveredDrugOrBiological3
-,NameOfAssociatedCoveredDrugOrBiological4) 
+,NameOfAssociatedCoveredDrugOrBiological4
+,NDCOfAssociatedCoveredDrugOrBiological1
+,NDCOfAssociatedCoveredDrugOrBiological2
+,NDCOfAssociatedCoveredDrugOrBiological3
+,NDCOfAssociatedCoveredDrugOrBiological4) 
 SELECT
 TeachingHospitalID
 ,TeachingHospitalName
@@ -116,6 +124,10 @@ TeachingHospitalID
 ,NameOfAssociatedCoveredDrugOrBiological2
 ,NameOfAssociatedCoveredDrugOrBiological3
 ,NameOfAssociatedCoveredDrugOrBiological4
+,NDCOfAssociatedCoveredDrugOrBiological1
+,NDCOfAssociatedCoveredDrugOrBiological2
+,NDCOfAssociatedCoveredDrugOrBiological3
+,NDCOfAssociatedCoveredDrugOrBiological4
 From PaymentDetailGeneral2013
 
 union 
@@ -156,6 +168,10 @@ TeachingHospitalID
 ,NameOfAssociatedCoveredDrugOrBiological2
 ,NameOfAssociatedCoveredDrugOrBiological3
 ,NameOfAssociatedCoveredDrugOrBiological4
+,NDCOfAssociatedCoveredDrugOrBiological1
+,NDCOfAssociatedCoveredDrugOrBiological2
+,NDCOfAssociatedCoveredDrugOrBiological3
+,NDCOfAssociatedCoveredDrugOrBiological4
 From PaymentDetailGeneral2014;
 
 
