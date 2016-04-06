@@ -39,7 +39,7 @@ def doQuery(query):
         return Response(generate(cursor), mimetype='application/json')
     except Exception, e:
         return Response(
-            [json.dumps({'msg':str(e)}), '\n'],
+            [json.dumps({'error': str(e)}), '\n'],
             status='500 Server exception',
             mimetype='application/json')
 
