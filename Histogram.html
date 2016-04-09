@@ -27,7 +27,7 @@ body {
 <script>
 
 // Generate a Bates distribution of 10 random variables.
-var values = d3.range(1000).map(d3.random.normal(.5,.1));
+var values = d3.range(1000).map(d3.random.bates(10));
 
 // A formatter for counts.
 var formatCount = d3.format(",.0f");
@@ -36,11 +36,8 @@ var margin = {top: 10, right: 30, bottom: 30, left: 30},
     width = 960 - margin.left - margin.right,
     height = 500 - margin.top - margin.bottom;
 
-var Domain_Xmin = Math.floor(d3.min(values, function(d) { return d; }));
-var Domain_Xmax = Math.ceil(d3.max(values, function(d) { return d; }));
-
 var x = d3.scale.linear()
-    .domain([Domain_Xmin, Domain_Xmax])
+    .domain([0, 1])
     .range([0, width]);
 
 // Generate a histogram using twenty uniformly-spaced bins.
@@ -64,7 +61,7 @@ var svg = d3.select("body").append("svg")
 
 var bar = svg.selectAll(".bar")
     .data(data)
-    .enter().append("g")
+  .enter().append("g")
     .attr("class", "bar")
     .attr("transform", function(d) { return "translate(" + x(d.x) + "," + y(d.y) + ")"; });
 
@@ -86,3 +83,4 @@ svg.append("g")
     .call(xAxis);
 
 </script>
+</body>
