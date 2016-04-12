@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <title>D3: A simple scatterplot with value labels</title>
+      <script type="text/javascript" src="http://d3js.org/d3.v3.min.js"></script>
+    <style type="text/css">
+     
+      
+      .axis path,
+      .axis line {
+        fill: none;
+        stroke: black;
+        shape-rendering: crispEdges;
+      }
+      
+      .axis text {
+        font-family: sans-serif;
+        font-size: 11px;
+      }
+
+
+    </style>
+  </head>
+  <body>
+    <script type="text/javascript">
+
+      //Width, height, and padding
+      var w = 500;
+      var h = 50;
+      var padding = 20;
+
+      //var dataset = [
+      //      1,2,3,4,5,6,7,8,9,10,12,12.1,12,2,12,3,12,11.9,10,10.5,11,11.2,12,12,12,12.11,12.4,14,16,17,18            ];
+      //Dynamic, random dataset
+      var dataset = [];
+      var numDataPoints = 100;
+      var xRange = Math.random() * 1000;
+    //  console.log("xRange: "+xRange);
+
+      for (var i = 0; i < numDataPoints; i++) {
+          var newNumber1 = Math.floor(Math.random() * xRange);
+          dataset.push([newNumber1]);
+        //  console.log(newNumber1);
+        }
+
+      //generate a datapoint to mark with a triangle
+      var selData= Math.floor(Math.random() * xRange);
+ console.log("selection:"+selData);
+      console.log("max: "+d3.max(dataset, function(d) { return parseInt(d); }));
+      
+     
+
+
+      //scale 
+      var xScale = d3.scale.linear()
+                     .domain([0, d3.max(dataset, function(d) { return parseInt(d); })])
+                     .range([0, w-padding*2]);
+
+      //Define X axis
+      var xAxis = d3.svg.axis()
+                .scale(xScale)
+                .orient("bottom")
+                .ticks(5);
+
+
+
+      //Create SVG element
+      var svg = d3.select("body")
+            .append("svg")
+            .attr("width", w)
+            .attr("height", h);
+
+      svg.selectAll("circle")
+         .data(dataset)
+         .enter()
+         .append("circle")
+         .attr("cx", function(d) {
+            return xScale(d);
+         })
+         .attr("cy", 20)
+         .attr("r", 6)
+         .style({stroke: "blue", "stroke-width": "2px", fill:"none"});
+
+
+        //Create X axis
+      svg.append("g")
+        .attr("class", "axis")
+        .attr("transform", "translate("+0+"," + (h - padding) + ")")
+        .call(xAxis);
+
+        //create a mark for the group of interest
+    //      svg.append("g").attr("class","mark")
+    //     .selectAll("path")
+    //     .data(selData)
+    //     .enter().append("path")
+    // //    .attr("transform", function(d) { return "translate(" + d + "," + 10 + ")"; })
+    //     .attr("d", d3.svg.symbol().type('triangle-up'))
+    //     .attr('fill',function(d){ return colorscale(d); })
+    //     .attr('stroke','#000')
+    //     .attr('stroke-width',1)
+    //     .size(100);
+
+
+    </script>
+  </body>
+</html>
