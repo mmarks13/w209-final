@@ -1,6 +1,6 @@
 function updateDesc() {
     $("#map-desc").text(
-	`Filter string: [${sql._makeWhere()}]`
+	`Filter string: [${sql._makeQuery()}]`
 	    .toString());
 }
 

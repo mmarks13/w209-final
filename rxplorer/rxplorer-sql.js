@@ -89,7 +89,7 @@ var sql=(function(module){
 	var where={};
 	var bb=module.boundingBox()
 	if(bb) {
-	    where[`ST_WITHIN(loc, ST_GeomFromText("${module._bbstring(bb)}"))`]=1;
+	    where[`ST_WITHIN(Coords, ST_GeomFromText("${module._bbstring(bb)}"))`]=1;
 	}
 	var spc=module.providerSpecialties();
 	if(spc && spc.length>0) {
@@ -135,7 +135,7 @@ var sql=(function(module){
 	return '';
     }
     module._makeQuery = function() {
-	`SELECT
+	return `SELECT
 	PhysicianProfileID AS physId,
 	CONCAT_WS(',',
 		  PhysicianProfileLastName +','
@@ -143,13 +143,15 @@ var sql=(function(module){
 		  PhysicianProfileMiddleName,
 		  PhysicianProfileSuffix
 		 ) AS PhysName,
-	PhysicianProfilePrimarySpecialty AS PhysSpec
+	PhysicianProfilePrimarySpecialty AS PhysSpec,
+	'{"lat":'||CAST(ST_Y(Coords) AS STRING)||',{"lng":'||CAST(ST_X(Coords) AS STRING)||'}' as latlng
 	FROM OpenPaymentPrescrJoin4
 	INNER JOIN PhysicianProfileSupplement
 	ON OpenPaymentPrescrJoin4.PhysicianProfileID=PhysicianProfileSupplement.PhysicianProfileID
 	INNER JOIN GeolocatedAddresses on GeolocAddrID=ID
-	${module.makeWhere()}
-	LIMIT 100;
+	INNER JOIN ZipLoc on zip=RecipientZipShort
+	${module._makeWhere()}
+	LIMIT 100
 	;`;
     }
     module.findProviders = function(callback) {
