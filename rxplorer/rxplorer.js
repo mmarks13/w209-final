@@ -1,16 +1,21 @@
+function updateDesc() {
+    $("#map-desc").text(
+	`Filter string: [${sql._makeWhere()}]`
+	    .toString());
+}
+
 $(document).ready(function(){
     console.log("Ready!!");
     map.init();
-    function updateBB(e) {
+    function updateBB() {
 	var bb=map.map.getBounds();
 	sql.boundingBox(bb);
-	$("#map-desc").text(
-	    `Filtering doctors using bounding box [${sql._bbstring(bb)}]`
-	    .toString());
+	updateDesc();
     }
+    updateBB();
     map.map.on('click', function(e){
  	map.map.setView(e.latlng);
-	updateBB(e);
+	updateBB();
     });
     map.map.on('moveend', updateBB);
     map.map.on('dragend', updateBB);
@@ -29,17 +34,42 @@ $(document).ready(function(){
 	      });
     specialties.specialty.on('change', function(ev) {
 	var opts=ev.target.selectedOptions;
-	console.log(ev.target, opts);
 	var chosen={}
 	for(var i=0; i < opts.length; ++i) {
-	    if(opts.value!=='') {
-		chosen[opts.value]=1;
+	    if(opts[i].value!=='') {
+		chosen[opts[i].value]=1;
 	    } else {
 		chosen={};
 		break;
 	    }
 	}
+	console.log("Specialties:", chosen,Object.keys(chosen));
 	sql.providerSpecialties(chosen);
-    })
+	updateDesc();
+    });
+    $("#ln").on('change', function(ev){
+	sql.lastName(ev.target.value);
+	console.log(sql.lastName());
+	
+    });		  
+    $("#fn").on('change', function(ev){
+	sql.firstName(ev.target.value);
+    });		  
+    $("#mn").on('change', function(ev){
+	sql.middleName(ev.target.value);
+    });
+    $("#sfx").on('change', function(ev){
+	sql.sfxName(ev.target.value);
+    }); 
+    $("#addr").on('change', function(ev){
+	sql.addr(ev.target.value);
+    });
+    $("#zip").on('change', function(ev){
+	sql.zip(ev.target.value);
+    }); 
+    $(".entry input").on('change', function(){
+	updateDesc();
+    });
+   
 });
 

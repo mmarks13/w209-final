@@ -60,6 +60,24 @@ var sql=(function(module){
 	return module._name.sfxName;
     }
 
+    module._addr='';
+    module.addr=function(_) {
+	if(arguments.length>0) {
+	    module._addr=_;
+	    return module;
+	}
+	return module._addr;
+    }
+
+    module._zip=''; 
+    module.zip=function(_) {
+	if(arguments.length>0) {
+	    module._zip=_;
+	    return module;
+	}
+	return module._zip;
+    }
+   
     module._llstring = function(ll) {
 	return `${ll.lng} ${ll.lat}`;
     }
@@ -68,52 +86,74 @@ var sql=(function(module){
     }
     
     module._makeWhere = function() {
-	var where=[];
+	var where={};
 	var bb=module.boundingBox()
 	if(bb) {
-	    where.push(`ST_WITHIN(loc, ST_GeomFromText("${module._bbstring(bb)}"))`);
+	    where[`ST_WITHIN(loc, ST_GeomFromText("${module._bbstring(bb)}"))`]=1;
 	}
 	var spc=module.providerSpecialties();
 	if(spc && spc.length>0) {
-	    where.push(`xxx IN (${spc.join(',')})`);
+	    var quoted=[]
+	    console.log(spc);
+	    for(var i=0;i<spc.length;++i) {
+		quoted.push('"'+spc[i]+'"');
+	    }
+	    var qstr=quoted.join(',');
+	    console.log(qstr);
+	    where[`PhysicianProfilePrimarySpecialty IN (${qstr})`]=1;
 	}
 	var fn=module.firstName();
 	if(fn && fn.length>0) {
-	    where.push(`xxx = {fn}`);
+	    where[`LCASE(PhysicianProfileFirstName)="${fn.toLowerCase()}"`]=1;
 	}
 	var mn=module.middleName();
 	if(mn && mn.length>0) {
-	    where.push(`xxx = {mn}`);
+	    where[`LCASE(PhysicianProfileMiddleName)="${mn.toLowerCase()}"`]=1;
 	}
 	var ln=module.lastName();
 	if(ln && ln.length>0) {
-	    where.push(`xxx = {ln}`);
+	    where[`LCASE(PhysicianProfileLastName)="${ln.toLowerCase()}"`]=1;
 	}
 	var sn=module.sfxName();
 	if(sn && sn.length>0) {
-	    where.push(`xxx = {sn}`);
+	    where[`LCASE(PhysicianProfileSuffix)="${sn.toLowerCase()}"`]=1;
 	}
-
-	
-	var whereClause=where.join(separator='and ');
+		
+	var addr=module.addr();
+	if(addr && addr.length>0) {
+	    where[`InAddress like "${'%'+addr.toLowerCase()+'%'}"`]=1;
+	}
+	var zip=module.zip();
+	if(zip && zip.length>0) {
+	    where[`PhysicianProfileZipCode=${zip}`]=1;
+	}
+	    
+	    var whereClause=Object.keys(where).join(separator='\nAND ');
 	if(whereClause!=='') {
 	    return "WHERE "+whereClause;
 	}
 	return '';
     }
-
+    module._makeQuery = function() {
+	`SELECT
+	PhysicianProfileID AS physId,
+	CONCAT_WS(',',
+		  PhysicianProfileLastName +','
+		  PhysicianProfileFirstName ,
+		  PhysicianProfileMiddleName,
+		  PhysicianProfileSuffix
+		 ) AS PhysName,
+	PhysicianProfilePrimarySpecialty AS PhysSpec
+	FROM OpenPaymentPrescrJoin4
+	INNER JOIN PhysicianProfileSupplement
+	ON OpenPaymentPrescrJoin4.PhysicianProfileID=PhysicianProfileSupplement.PhysicianProfileID
+	INNER JOIN GeolocatedAddresses on GeolocAddrID=ID
+	${module.makeWhere()}
+	LIMIT 100;
+	;`;
+    }
     module.findProviders = function(callback) {
-	
-	return module.query(
-	    `SELECT PhysicianProviderId AS PhysID,
-	    PhysicianFirstName AS PhysFN,
-	    PhysicianMiddleName AS PhysMN,
-	    PhysicianLastName AS PhysLN,
-	    PhysicianLastName AS PhysLN,
-	    FROM
-	    ${module.makeWhere()}
-	    ;`,
-	    callback);
+	return module.query(module._makeQuery(), callback);
     }
 
     return module;
