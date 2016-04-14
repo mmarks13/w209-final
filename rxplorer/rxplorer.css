@@ -1,0 +1,35 @@
+* { vertical-align:top; }
+
+.title {
+    font-size: x-large;
+    font-family: sans;
+    font-weight: bold;
+}
+.subtitle {
+    font-size: large;
+    padding-bottom: 1em;
+    font-family: sans;
+    font-style: oblique;
+}
+
+.entry-section {
+    display: block;
+}
+
+
+.entry {
+    display: inline-block;
+    width: 30%;
+    padding-right: 3%
+}
+.entry select {
+    width: 100%;
+}
+.entry input {
+    width: 100%;
+}
+
+#map {
+    display: block;
+    height: 600px;
+}
