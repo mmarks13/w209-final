@@ -5,12 +5,26 @@
 .container_chart1 {
   position: absolute;
   left: 0px;
-  width: 350px;
+  width: 400px;
 }
 .container_chart2{
   position: absolute;
-  left: 350px;
-  width: 350px;
+  left: 500px;
+  width: 400px;
+}
+div.tooltip {	
+    position: absolute;			
+    text-align: center;			
+    width: 200px;					
+    height: 90px;					
+    padding: 2px;				
+    font: 12px sans-serif;		
+    background: white;	
+    border: solid;
+    border-width: 1px;	
+    border-color: black;	
+    border-radius: 5px;			
+    pointer-events: none;			
 }
 </style>
 
@@ -23,17 +37,18 @@
     <h2> Physicians' Pharma Relationships</h2>
     <body>    
     <div class="container_chart1" id="chart1">
-    	<p align="center">Medicare Prescriptions Written - 2013</p>
+    	<h4 align="center">Money Received from Pharmacuetical Companies</h4>
 	</div>
 	<div class="container_chart2" id="chart2">
-		<p align="center">Money Received from Pharmacuetical Companies</p>
+		<h4 align="center">Medicare Prescriptions Written - 2013</h4>
 	</div>    
         <script type="text/javascript">	
         	//Width and height
-			var w = 300;
-			var h = 500;
+			var w = 400;
+			var h = 600;
 			var barPadding = 1;
-			var barHeight = 20
+			var barHeight = 27
+			var Main_bar_x_Scale_Start = 60
 			var padding = 40;
 			var barColor = "#62b5d1"
 			var svg_chart1 = d3.select("#chart1")
@@ -46,18 +61,25 @@
 			.attr("width",w)
 			.attr("height",h);
 
-	        d3.json("Main_Table_Lens_Data.json", function(data) {
-				jsn_Main_Table_Lens_Data = data
-				dataset = jsn_Main_Table_Lens_Data.map(function(a) {return [a.Prescriptions_Written,a.Amt_Payments_Received,a.Drug];});
+			var div = d3.select("div").append("div")
+			    .attr("class", "tooltip")	
+			    .attr("id", "Hover_Graph")			
+			    .style("opacity", 0);		
 
+			// var svg_tooltip = d3.select("#Hover_Graph")
+			// .append("svg");	
+
+	        d3.json("http://169.53.15.199:20900/mainTable/13444", function(data) { console.log(data)
+				jsn_Main_Table_Lens_Data = data.data
+				dataset = jsn_Main_Table_Lens_Data.map(function(a) {return [a.RxCnt,a.PmntCnt,a.Rx];});
 
 				var xScale = d3.scale.linear()
 					.domain([0,d3.max(dataset,function(d){return d[0];})])
-					.range([padding ,w-padding*2 ]);
+					.range([Main_bar_x_Scale_Start ,w-80 ]);
 
 				var yScale = d3.scale.linear()
 					.domain([0,15])
-					.range([padding ,h-padding ]); //reverse to y scale goes from bottom to top
+					.range([0 ,h ]); //reverse to y scale goes from bottom to top
 
 				//Create chart 1
 				svg_chart1.selectAll("rect")
@@ -67,12 +89,119 @@
 				   .attr("y", function(d, i) {
 				   		return yScale(i);
 				   })
-				   .attr("x", xScale(padding))
+				   .attr("x", Main_bar_x_Scale_Start)
 				   .attr("height", barHeight)
 				   .attr("width", function(d) {
 				   		return xScale(d[0]);
 				   })
-				   .attr("fill", d3.rgb(barColor));
+				   .attr("fill", d3.rgb(barColor))
+
+				   //add on mouseover pop up functionality
+				   .on("mouseover", function(d) {	
+				   	bar_Value = d[2] //since we are using d again, we need to convert the orginal d to a new variable 
+
+				   	//get coordinates of the mouse
+				   	var x_cord = d3.event.pageX;
+				   	var y_cord = d3.event.pageY;
+					
+					//load in hover data
+				    d3.json("http://169.53.15.199:20900/hoverTable/13444", function(data) {
+						dataset= data.data
+						jsn_HoverData = dataset.map(function(a) {return [a.Rx,a.PmntType,a.PmntCnt];});
+
+						//need to determine the indexes for d.Rx in jsn_HoverData. Match the drug with a loop and return matching index
+						var match_index = []
+						var num_matches = 0
+						var Matching_Array_Slice = []
+						for (i = 0; i < jsn_HoverData.length; i++) { 
+	    					if (bar_Value == jsn_HoverData[i][0]){
+	    						console.log(bar_Value + " = " + jsn_HoverData[i][0])
+	    						match_index[num_matches] = i
+	    						Matching_Array_Slice[num_matches] = jsn_HoverData[i]
+	    						num_matches++;}
+						}
+
+			            div.transition()		
+			                .duration(200)		
+			                .style("opacity", .9)
+
+			            var Drug_Name = Matching_Array_Slice[0][0]
+
+			            div.html("Drug: "+ Drug_Name + "<br/><font size=\"1\">Nature of Payments</font><br/>")	
+			            	.style("left", (x_cord) + "px")		
+			                .style("top", (y_cord-40) + "px")
+					
+					    Bar_x_Scale_Start = 60
+
+						var xScale_hover = d3.scale.linear()
+							.domain([0,d3.max(Matching_Array_Slice,function(d){return d[2];})])
+							.range([Bar_x_Scale_Start ,100 ]);
+
+						var yScale_hover = d3.scale.linear()
+							.domain([0,6])
+							.range([5 ,90]); //reverse to y scale goes from bottom to top
+
+			            //create variable to append svg objects to tooltip 	
+			            var div_svg = div.append("svg")
+				           .attr("width",200)
+				           .attr("height",100)
+
+				        //append bars   	
+						div_svg.selectAll("svg")
+						   .data(Matching_Array_Slice)
+						   .enter()
+						   .append("rect")
+						   .attr("y", function(d, i) {
+						   		return yScale_hover(i);
+						   })
+						   .attr("x", xScale_hover(0))
+						   .attr("height", 10)
+						   .attr("width",  function(d) { console.log(d)
+						   		return xScale_hover(d[2]);
+						   })
+						   .attr("fill", d3.rgb(barColor));
+
+						//append axis labels
+			            div_svg.selectAll("svg")
+						    .data(Matching_Array_Slice)
+							.enter()
+							.append("text")
+							.text(function(d) {return d[1]})
+							.attr("x", Bar_x_Scale_Start-1)
+							.attr("y", function(d, i) {
+						   		return yScale_hover(i)+6;
+						   	})
+							.attr("font-family","sans-serif")
+							.attr("font-size", "8px")
+							.attr("fill","black")
+							.attr("text-anchor","end");
+
+						//append quantitative values		
+						div_svg.selectAll("svg")
+						    .data(Matching_Array_Slice)
+							.enter()
+							.append("text")
+							.text(function(d) {return "$"+d[2]})
+							.attr("x", function(d) {
+						   		return xScale_hover(d[2])+Bar_x_Scale_Start+2;
+						   	})
+							.attr("y", function(d, i) {
+						   		return yScale_hover(i)+6;
+						   	})
+							.attr("font-family","sans-serif")
+							.attr("font-size", "8px")
+							.attr("fill","black");
+			                	
+		            })	
+					})
+
+					
+		        	.on("mouseout", function(d) {		
+		            div.transition()
+		              	.style("opacity", 0)
+
+		            div.selectAll("svg").remove();	//remove the created svg's in the tooltop
+		        	});
 				
 				var xScale = d3.scale.linear()
 					.domain([0,d3.max(dataset,function(d){return d[1];})])
@@ -87,7 +216,7 @@
 				   .attr("y", function(d, i) {
 				   		return yScale(i);
 				   })
-				   .attr("x", xScale(padding))
+				   .attr("x", Main_bar_x_Scale_Start)
 				   .attr("height", barHeight)
 				   .attr("width", function(d) {
 				   		return xScale(d[1]);
@@ -101,12 +230,12 @@
 					.enter()
 					.append("text")
 					.text(function(d) {return d[2]})
-					.attr("x", xScale(padding)+5)
+					.attr("x", Main_bar_x_Scale_Start -4)
 					.attr("y", function(d, i) {
-				   		return yScale(i)+barHeight/2;
+				   		return yScale(i)+barHeight/2+5;
 				   	})
 					.attr("font-family","sans-serif")
-					.attr("font-size", "12px")
+					.attr("font-size", "15px")
 					.attr("fill","black")
 					.attr("text-anchor","end");
 
@@ -116,12 +245,12 @@
 					.enter()
 					.append("text")
 					.text(function(d) {return d[2]})
-					.attr("x", xScale(padding))
+					.attr("x", Main_bar_x_Scale_Start -4)
 					.attr("y", function(d, i) {
-				   		return yScale(i)+barHeight/2;
+				   		return yScale(i)+barHeight/2+5;
 				   	})
 					.attr("font-family","sans-serif")
-					.attr("font-size", "12px")
+					.attr("font-size", "15px")
 					.attr("fill","black")
 					.attr("text-anchor","end");
 
