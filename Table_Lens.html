@@ -69,13 +69,13 @@ div.tooltip {
 			// var svg_tooltip = d3.select("#Hover_Graph")
 			// .append("svg");	
 
-	        d3.json("http://169.53.15.199:20900/mainTable/13444", function(data) { console.log(data)
+	        d3.json("http://169.53.15.199:20900/mainTable/13444", function(data) {
 				jsn_Main_Table_Lens_Data = data.data
 				dataset = jsn_Main_Table_Lens_Data.map(function(a) {return [a.RxCnt,a.PmntCnt,a.Rx];});
 
 				var xScale = d3.scale.linear()
-					.domain([0,d3.max(dataset,function(d){return d[0];})])
-					.range([Main_bar_x_Scale_Start ,w-80 ]);
+					.domain([0,d3.max(dataset,function(d){return d[1];})])
+					.range([Main_bar_x_Scale_Start ,w-120 ]);
 
 				var yScale = d3.scale.linear()
 					.domain([0,15])
@@ -92,7 +92,7 @@ div.tooltip {
 				   .attr("x", Main_bar_x_Scale_Start)
 				   .attr("height", barHeight)
 				   .attr("width", function(d) {
-				   		return xScale(d[0]);
+				   		return xScale(d[1]);
 				   })
 				   .attr("fill", d3.rgb(barColor))
 
@@ -190,8 +190,7 @@ div.tooltip {
 						   	})
 							.attr("font-family","sans-serif")
 							.attr("font-size", "8px")
-							.attr("fill","black");
-			                	
+							.attr("fill","black");			                	
 		            })	
 					})
 
@@ -203,9 +202,9 @@ div.tooltip {
 		            div.selectAll("svg").remove();	//remove the created svg's in the tooltop
 		        	});
 				
-				var xScale = d3.scale.linear()
-					.domain([0,d3.max(dataset,function(d){return d[1];})])
-					.range([padding ,w-padding*2 ]);
+				var xScale_chart2 = d3.scale.linear()
+					.domain([0,d3.max(dataset,function(d){return d[0];})])
+					.range([Main_bar_x_Scale_Start ,w-120 ]);
 
 
 				//Create chart 2
@@ -219,7 +218,7 @@ div.tooltip {
 				   .attr("x", Main_bar_x_Scale_Start)
 				   .attr("height", barHeight)
 				   .attr("width", function(d) {
-				   		return xScale(d[1]);
+				   		return xScale_chart2(d[0]);
 				   })
 				   .attr("fill", d3.rgb(barColor));
 
@@ -253,6 +252,35 @@ div.tooltip {
 					.attr("font-size", "15px")
 					.attr("fill","black")
 					.attr("text-anchor","end");
+
+				//Add numeric labels chart 1
+				svg_chart1.selectAll('svg')
+					.data(dataset.sort(function(a, b){return b[0] - a[0];}))
+					.enter()
+					.append("text")
+					.text(function(d) {return "$"+ d[1]})
+					.attr("x", function(d) {return  xScale(d[1])+Main_bar_x_Scale_Start+2;})
+					.attr("y", function(d, i) {
+				   		return yScale(i)+barHeight/2+5;
+				   	})
+					.attr("font-family","sans-serif")
+					.attr("font-size", "13px")
+					.attr("fill","black");
+
+				//Add numeric labels chart 2
+				svg_chart2.selectAll('svg')
+					.data(dataset.sort(function(a, b){return b[0] - a[0];}))
+					.enter()
+					.append("text")
+					.text(function(d) {return d[0];})
+					.attr("x", function(d) {return xScale_chart2(d[0])+Main_bar_x_Scale_Start+2;})
+					.attr("y", function(d, i) {
+				   		return yScale(i)+barHeight/2+5;
+				   	})
+					.attr("font-family","sans-serif")
+					.attr("font-size", "13px")
+					.attr("fill","black")
+					.attr("text-anchor","start");
 
 			});
 	
