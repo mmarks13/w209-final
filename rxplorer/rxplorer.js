@@ -8,7 +8,6 @@ function updateProviders() {
 	    $("#error").text(resp.err);
 	}
 	if(resp.data && resp.data.length > 0) {
-	    console.log(resp.data[0]);
 	    $('#rowcount').text(`Found ${resp.data.length} matching physicians`);
 
 	    resp.data.forEach(function(row) {
@@ -26,11 +25,10 @@ function updateProviders() {
 		    loc=row.zipLatLng;
 		    msg+='<br />\napprox. location (ZIP code)'
 		}
-		console.log("Marker:", loc, row.physId, msg)
 		try {
 		    map.addMarker(JSON.parse(loc), row.physId, msg);
 		} catch(e) {
-		    console.log("error:", e);
+		    $("#error").text(`${row.physid}: ${e.toString()}<br />\n${msg}`);
 		}
 	    });
 	}
@@ -67,7 +65,6 @@ $(document).ready(function(){
 	if (ev.target.value) {
 	    $.getJSON('http://169.53.15.199:20900/ziploc/'+`${ev.target.value}`)
 		.done(function(latlng){
-		    console.log(latlng);
 		    map.refresh({center: latlng, zoom: 15});
 		});
 	}

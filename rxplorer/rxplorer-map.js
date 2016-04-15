@@ -36,7 +36,6 @@ var map=(function(module){
 	if (options && options.zoom) {
 	    zoom=options.zoom;
 	}
-	console.log("Using center", center, "zoom", zoom, 'maxBounds', module._max_bounds)
 	module.map.setView(
 	    center,
 	    zoom,

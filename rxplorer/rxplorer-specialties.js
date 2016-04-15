@@ -25,7 +25,6 @@ var specialties=(function(module){
 		    break;
 		}
 	    }
-	    console.log("Specialties:", chosen,Object.keys(chosen));
 	    sql.providerSpecialties(chosen);
 	});
 	return module;

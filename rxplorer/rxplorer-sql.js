@@ -53,12 +53,10 @@ var sql=(function(module){
 	var spc=module.providerSpecialties();
 	if(spc && spc.length>0) {
 	    var quoted=[]
-	    console.log(spc);
 	    for(var i=0;i<spc.length;++i) {
 		quoted.push('"'+spc[i]+'"');
 	    }
 	    var qstr=quoted.join(',');
-	    console.log(qstr);
 	    where[`PhysicianProfilePrimarySpecialty IN (${qstr})`]=1;
 	}
 	var fn=module.firstName();
