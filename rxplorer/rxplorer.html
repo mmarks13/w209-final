@@ -7,14 +7,16 @@
     <link rel="stylesheet" href="http://cdn.leafletjs.com/leaflet/v0.7.7/leaflet.css" />
     <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/3.5.16/d3.min.js"></script>
     <script src="https://code.jquery.com/jquery-2.2.3.min.js"></script>
-    <script src="http://cdn.leafletjs.com/leaflet/v0.7.7/leaflet.js"></script>
+    <script src="http://cdn.leafletjs.com/leaflet/v0.7.7/leaflet-src.js"></script>
   </head>
   <body>
     <div class="title">Physician R<sub>x</sub>Plorer</div>
     <div class="subtitle">Visualizing the relationship between pharmaceutical company payments and drug prescriptions</div>
+    <div>
+      Find your doctors: <br />
+      <button id='refresh'>Retrieve providers</button>
+    </div>
     <div class="entry-section">
-      <div>Find your doctors</div>
-      
       <div class="entry" id="dr-selection">
 	Filter by specialty:<br />
 	<select id="specialty" multiple="">
@@ -33,6 +35,9 @@
 	Address: <input id="addr" size="80"/><br />
 	ZIP: <input id="zip" size="5" maxlength="5"/><br />
       </div>
+      <div class="entry">
+	Limit the number of results: <input id='limit' value='1000' maxlength='6'/>
+      </div>
     </div>
     <hr />
     <div id="map" class="entry-section">
@@ -40,6 +45,8 @@
     <div id="map-desc"></div>
     <hr />
     <div id="results">
+      <div id="rowcount"></div>
+      <pre id="error"></pre>
     </div>
 
     <script src="rxplorer-sql.js"></script>

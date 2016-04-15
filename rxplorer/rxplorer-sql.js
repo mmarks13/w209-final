@@ -4,79 +4,38 @@ var sql=(function(module){
 	d3.json(module.endpoint+'?query='+encodeURIComponent(query), callback);
 	return module;
     }
-    module._providerSpecialties={}
-    module.providerSpecialties=function(_) {
-	if(arguments.length>0) {
-	    module._providerSpecialties=_;
-	    return module;
-	}
-	return Object.keys(module._providerSpecialties);
-    }
 
-    module.boundingBox=null;
-    module.boundingBox=function(_) {
-	if(arguments.length>0) {
-	    module._boundingBox=_;
-	    return module;
-	}
-	return module._boundingBox;
-    }
-
-    module._name={};
-    module.name=function(_) {
-	if(arguments.length>0) {
-	    module._name=_;
-	    return module;
-	}
-	return module._name;
-    }
-    module.firstName=function(_) {
-	if(arguments.length>0) {
-	    module._name.firstName=_;
-	    return module;
-	}
-	return module._name.firstName;
+    function makeAttribute(module, attrName, defaultVal, subAccessor) {
+        var _attrName='_'+attrName;
+        module[_attrName]=defaultVal||null;
+        if(subAccessor) {
+            module[attrName]=function(_) {
+                if(arguments.length>0) {
+                    module[_attrName]=_;
+                    return module;
+                }
+                return subAccessor(module[_attrName]);
+            }
+        } else {
+            module[attrName]=function(_) {
+                if(arguments.length>0) {
+                    module[_attrName]=_;
+                    return module;
+                }
+                return module[_attrName];
+            }
+        }
     }
     
-    module.middleName=function(_) {
-	if(arguments.length>0) {
-	    module._name.middleName=_;
-	    return module;
-	}
-	return module._name.middleName;
-    }
-    module.lastName=function(_) {
-	if(arguments.length>0) {
-	    module._name.lastName=_;
-	    return module;
-	}
-	return module._name.lastName;
-    }
-    module.sfxName=function(_) {
-	if(arguments.length>0) {
-	    module._name.sfxName=_;
-	    return module;
-	}
-	return module._name.sfxName;
-    }
-
-    module._addr='';
-    module.addr=function(_) {
-	if(arguments.length>0) {
-	    module._addr=_;
-	    return module;
-	}
-	return module._addr;
-    }
-
-    module._zip=''; 
-    module.zip=function(_) {
-	if(arguments.length>0) {
-	    module._zip=_;
-	    return module;
-	}
-	return module._zip;
-    }
+    makeAttribute(module, 'providerSpecialties', {}, Object.keys)
+    makeAttribute(module, 'boundingBox');
+    makeAttribute(module, 'firstName');
+    makeAttribute(module, 'middleName');
+    makeAttribute(module, 'lastName');
+    makeAttribute(module, 'sfxName');
+    makeAttribute(module, 'addr');
+    makeAttribute(module, 'zip');
+    makeAttribute(module, 'limit');
    
     module._llstring = function(ll) {
 	return `${ll.lng} ${ll.lat}`;
@@ -125,34 +84,45 @@ var sql=(function(module){
 	}
 	var zip=module.zip();
 	if(zip && zip.length>0) {
-	    where[`PhysicianProfileZipCode=${zip}`]=1;
+	    where[`Zip5=${zip}`]=1;
 	}
 	    
-	    var whereClause=Object.keys(where).join(separator='\nAND ');
+	var whereClause=Object.keys(where).join(separator='\nAND ');
 	if(whereClause!=='') {
 	    return "WHERE "+whereClause;
 	}
 	return '';
     }
     module._makeQuery = function() {
-	return `SELECT
-	PhysicianProfileID AS physId,
-	CONCAT_WS(',',
-		  PhysicianProfileLastName +','
-		  PhysicianProfileFirstName ,
+	var query=`SELECT
+	PhysicianProfileID         AS physId,
+	PhysicianProfileLastName as lastName,
+	CONCAT_WS(' ',
+		  PhysicianProfileFirstName, 
 		  PhysicianProfileMiddleName,
 		  PhysicianProfileSuffix
-		 ) AS PhysName,
-	PhysicianProfilePrimarySpecialty AS PhysSpec,
-	'{"lat":'||CAST(ST_Y(Coords) AS STRING)||',{"lng":'||CAST(ST_X(Coords) AS STRING)||'}' as latlng
-	FROM OpenPaymentPrescrJoin4
-	INNER JOIN PhysicianProfileSupplement
-	ON OpenPaymentPrescrJoin4.PhysicianProfileID=PhysicianProfileSupplement.PhysicianProfileID
+		 ) AS name,
+	PhysicianProfilePrimarySpecialty AS spec,
+	CONCAT_WS(' ',
+		   PhysicianProfileAddressLine1,
+		   PhysicianProfileAddressLine2
+		  ) AS addr,
+	PhysicianProfileCity AS city,
+	PhysicianProfileState AS state,
+	Zip5 AS zip,
+	CONCAT('{"lat":', ST_Y(Coords), ',"lng":', ST_X(Coords),'}') AS latLng,
+	CONCAT('{"lat":', ST_Y(loc), ',"lng":', ST_X(loc),'}') AS zipLatLng
+	FROM PhysicianProfileSupplement
 	INNER JOIN GeolocatedAddresses on GeolocAddrID=ID
-	INNER JOIN ZipLoc on zip=RecipientZipShort
-	${module._makeWhere()}
-	LIMIT 100
-	;`;
+	INNER JOIN ZipLoc on zip=zip5
+	${module._makeWhere()}`;
+	var limit=module.limit();
+	if(limit && limit>0) {
+		query = query + `\nLIMIT ${limit}`;
+	} else {
+	    // no limit
+	}
+	return query+';';
     }
     module.findProviders = function(callback) {
 	return module.query(module._makeQuery(), callback);

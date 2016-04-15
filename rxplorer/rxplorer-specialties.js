@@ -1,6 +1,33 @@
 var specialties=(function(module){
-    module.init = function() {
-	module.specialty=$('#specialty');
+    module.init=function(endpoint, sel) {
+	module.specialty=sel;
+	$.get(endpoint).done(function(resp) {
+	    if(resp.data) {
+		resp.data.forEach(function(row) {
+			      var opt=$("<option>");
+		    opt.attr('value',row.Specialty);
+		    opt.text(row.Specialty);
+		    specialties.specialty.append(opt);
+		});
+	    }
+	    if(resp.err && resp.err.length>0) {
+		alert(resp.err);
+	    }
+	});
+	specialties.specialty.on('change', function(ev) {
+	    var opts=ev.target.selectedOptions;
+	    var chosen={}
+	    for(var i=0; i < opts.length; ++i) {
+		if(opts[i].value!=='') {
+		    chosen[opts[i].value]=1;
+		} else {
+		    chosen={};
+		    break;
+		}
+	    }
+	    console.log("Specialties:", chosen,Object.keys(chosen));
+	    sql.providerSpecialties(chosen);
+	});
 	return module;
     }
     return module;
