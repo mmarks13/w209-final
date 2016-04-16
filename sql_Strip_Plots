@@ -1,3 +1,5 @@
+Use final
+
 Select
 PhysicianProfileID  
 ,PhysicianFirstName
@@ -9,4 +11,4 @@ from OpenPaymentPrescrJoin4
 group by PhysicianProfileID  
 ,PhysicianFirstName
 ,PhysicianLastName
-,DrugName
+,DrugName;
