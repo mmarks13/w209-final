@@ -1,13 +1,21 @@
 var sql=(function(module){
     module.endpoint = 'http://169.53.15.199:20900/sql';
-    module.query = function(query, callback) {
-	d3.json(module.endpoint+'?query='+encodeURIComponent(query), callback);
-	return module;
+    module.query = function(query, callbacks) {
+	return oboe({url: module.endpoint+'?query='+encodeURIComponent(query),
+		     cached: true});
     }
 
+    module._resetData={}
+    module.reset = function() {
+	Object.keys(module._resetData).forEach(function(attr) {
+	    module[attr]=module._resetData[attr];
+	});
+    }
+    
     function makeAttribute(module, attrName, defaultVal, subAccessor) {
         var _attrName='_'+attrName;
         module[_attrName]=defaultVal||null;
+	module._resetData
         if(subAccessor) {
             module[attrName]=function(_) {
                 if(arguments.length>0) {
@@ -26,7 +34,7 @@ var sql=(function(module){
             }
         }
     }
-    
+
     makeAttribute(module, 'providerSpecialties', {}, Object.keys)
     makeAttribute(module, 'boundingBox');
     makeAttribute(module, 'firstName');
@@ -36,7 +44,7 @@ var sql=(function(module){
     makeAttribute(module, 'addr');
     makeAttribute(module, 'zip');
     makeAttribute(module, 'limit');
-   
+    
     module._llstring = function(ll) {
 	return `${ll.lng} ${ll.lat}`;
     }
@@ -45,7 +53,7 @@ var sql=(function(module){
     }
     
     module._makeWhere = function() {
-	var where={};
+	var where={'PhysicianProfileZip5=Zip5': 1};
 	var bb=module.boundingBox()
 	if(bb) {
 	    where[`ST_WITHIN(Coords, ST_GeomFromText("${module._bbstring(bb)}"))`]=1;
@@ -112,7 +120,7 @@ var sql=(function(module){
 	CONCAT('{"lat":', ST_Y(loc), ',"lng":', ST_X(loc),'}') AS zipLatLng
 	FROM PhysicianProfileSupplement
 	INNER JOIN GeolocatedAddresses on GeolocAddrID=ID
-	INNER JOIN ZipLoc on zip=zip5
+	INNER JOIN ZipLoc on zip=Zip5
 	${module._makeWhere()}`;
 	var limit=module.limit();
 	if(limit && limit>0) {
@@ -122,8 +130,8 @@ var sql=(function(module){
 	}
 	return query+';';
     }
-    module.findProviders = function(callback) {
-	return module.query(module._makeQuery(), callback);
+    module.findProviders = function() {
+	return module.query(module._makeQuery());
     }
 
     return module;

@@ -4,54 +4,23 @@
     <title>Physician RxPlorer</title>
     <meta charset="utf-8"/>
     <link rel="stylesheet" href="rxplorer.css" />
-    <link rel="stylesheet" href="http://cdn.leafletjs.com/leaflet/v0.7.7/leaflet.css" />
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/3.5.16/d3.min.js"></script>
-    <script src="https://code.jquery.com/jquery-2.2.3.min.js"></script>
-    <script src="http://cdn.leafletjs.com/leaflet/v0.7.7/leaflet-src.js"></script>
+    <link rel="stylesheet" href="/css/leaflet.css" />
+    <link rel="stylesheet" href="/css/jquery.dataTables.min.css"/>
+    <script src="/js/jquery-2.2.3.min.js"></script>
+    <script src="/js/d3.min.js"></script>
+    <script src="/js/leaflet.js"></script>
+    <script src="/js/jquery.dataTables.min.js"></script>
+    <script src="/js/oboe-browser.min.js"></script>
   </head>
   <body>
     <div class="title">Physician R<sub>x</sub>Plorer</div>
     <div class="subtitle">Visualizing the relationship between pharmaceutical company payments and drug prescriptions</div>
-    <div>
-      Find your doctors: <br />
-      <button id='refresh'>Retrieve providers</button>
-    </div>
-    <div class="entry-section">
-      <div class="entry" id="dr-selection">
-	Filter by specialty:<br />
-	<select id="specialty" multiple="">
-	  <option value="">All specialties</option>
-	</select>
-      </div>
-      <div class="entry" id="name-selection">
-	Filter by name:<br />
-	Last: <input id="ln" size="32"/><br />
-	First: <input id="fn" size="32"/><br />
-	Middle: <input id="mn" size="32"/><br />
-	Suffix: <input id="sfx" size="5"/><br />
-      </div>
-      <div class="entry" id="loc">
-	Filter by location:<br />
-	Address: <input id="addr" size="80"/><br />
-	ZIP: <input id="zip" size="5" maxlength="5"/><br />
-      </div>
-      <div class="entry">
-	Limit the number of results: <input id='limit' value='1000' maxlength='6'/>
-      </div>
-    </div>
-    <hr />
-    <div id="map" class="entry-section">
-    </div>
-    <div id="map-desc"></div>
-    <hr />
-    <div id="results">
-      <div id="rowcount"></div>
-      <pre id="error"></pre>
-    </div>
-
+    <div id="physician-selector"> </div>
+    
     <script src="rxplorer-sql.js"></script>
     <script src="rxplorer-map.js"></script>
     <script src="rxplorer-specialties.js"></script>
+    <script src="rxplorer-physician.js"></script>
     <script src="rxplorer.js"></script>
   </body>
 </html>

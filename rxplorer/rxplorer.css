@@ -1,4 +1,9 @@
 * { vertical-align:top; }
+
+#physician-selector {
+    width: 100%;
+}
+
 .title {
     font-size: x-large;
     font-family: sans;
@@ -27,9 +32,4 @@
 }
 .entry input {
     width: 100%;
-}
-
-#map {
-    display: block;
-    height: 600px;
 }
