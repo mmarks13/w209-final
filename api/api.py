@@ -109,7 +109,7 @@ WHERE PhysicianProfileID={physician} ;'''.format(physician=physician))
 @app.route('/histogramData/<column>/')
 @app.route('/histogramData/<column>/<drug>')
 def StripPlot(column,drug = None):
-    return Response(json.dumps(val={
+    return Response(json.dumps({
   'data': np.random.randint(0,10000,1000).tolist(),
   'error': None
     }), status='200 OK'); 
