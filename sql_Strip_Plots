@@ -6,7 +6,7 @@ DrugName
 ,sum(TotalClaimCountAgg) as RxCnt
 from OpenPaymentPrescrJoin4
 group by DrugName
-limit 1000;
+limit 10;
 
 
 Select 
@@ -15,7 +15,7 @@ DrugName
 ,sum(case when TotalClaimCountAgg is null then 0 Else TotalClaimCountAgg End) as RxCnt
 from OpenPaymentPrescrJoin4
 group by DrugName
-limit 1000;
+limit 10;
 
 
 
