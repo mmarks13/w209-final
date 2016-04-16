@@ -5,11 +5,13 @@
 .container_chart1 {
   position: absolute;
   left: 0px;
+  top: 150px;
   width: 400px;
 }
 .container_chart2{
   position: absolute;
   left: 500px;
+  top: 150px;
   width: 400px;
 }
 div.tooltip {	
@@ -24,8 +26,31 @@ div.tooltip {
     border-width: 1px;	
     border-color: black;	
     border-radius: 5px;			
-    pointer-events: none;			
+    pointer-events: none;
+    z-index:5;			
 }
+
+.container_stripPlot1 {
+  position: absolute;
+  left: 0px;
+  width: 400px;
+}
+.container_stripPlot2{
+  position: absolute;
+  left: 500px;
+  width: 400px;
+}
+      .axis path,
+      .axis line {
+        fill: none;
+        stroke: none;
+        shape-rendering: crispEdges;
+      }
+      
+      .axis text {
+        font-family: sans-serif;
+        font-size: 11px;
+      }
 </style>
 
 <html lang="en">
@@ -35,7 +60,14 @@ div.tooltip {
         <script type="text/javascript" src="../d3.js"></script>
     </head>
     <h2> Physicians' Pharma Relationships</h2>
-    <body>    
+    <body> 
+    <!--add the divs for the strip plots above the plot titles. This will allow the two plots to share the title text-->
+    <div class="container_stripPlot1" id="strip1">
+	</div>
+	<div class="container_stripPlot2" id="strip2">
+	</div>    
+    
+    <!--add the divs for the two charts for the table lens and include a title for the plots-->
     <div class="container_chart1" id="chart1">
     	<h4 align="center">Money Received from Pharmacuetical Companies</h4>
 	</div>
@@ -43,6 +75,9 @@ div.tooltip {
 		<h4 align="center">Medicare Prescriptions Written - 2013</h4>
 	</div>    
         <script type="text/javascript">	
+        	//Doctor Name
+        	var Doctor_Name = "Dr. John Smith"
+
         	//Width and height
 			var w = 400;
 			var h = 600;
@@ -83,7 +118,7 @@ div.tooltip {
 
 				//Create chart 1
 				svg_chart1.selectAll("rect")
-				   .data(dataset.sort(function(a, b){return b[0] - a[0];}))
+				   .data(dataset.sort(function(a, b){return b[1] - a[1];}))
 				   .enter()
 				   .append("rect")
 				   .attr("y", function(d, i) {
@@ -209,7 +244,7 @@ div.tooltip {
 
 				//Create chart 2
 				svg_chart2.selectAll("rect")
-				   .data(dataset.sort(function(a, b){return b[0] - a[0];}))
+				   .data(dataset.sort(function(a, b){return b[1] - a[1];}))
 				   .enter()
 				   .append("rect")
 				   .attr("y", function(d, i) {
@@ -225,7 +260,7 @@ div.tooltip {
 
 				//Add Labels chart 1
 				svg_chart1.selectAll("text")
-					.data(dataset.sort(function(a, b){return b[0] - a[0];}))
+					.data(dataset.sort(function(a, b){return b[1] - a[1];}))
 					.enter()
 					.append("text")
 					.text(function(d) {return d[2]})
@@ -240,7 +275,7 @@ div.tooltip {
 
 				//Add Labels chart 2
 				svg_chart2.selectAll("text")
-					.data(dataset.sort(function(a, b){return b[0] - a[0];}))
+					.data(dataset.sort(function(a, b){return b[1] - a[1];}))
 					.enter()
 					.append("text")
 					.text(function(d) {return d[2]})
@@ -255,7 +290,7 @@ div.tooltip {
 
 				//Add numeric labels chart 1
 				svg_chart1.selectAll('svg')
-					.data(dataset.sort(function(a, b){return b[0] - a[0];}))
+					.data(dataset.sort(function(a, b){return b[1] - a[1];}))
 					.enter()
 					.append("text")
 					.text(function(d) {return "$"+ d[1]})
@@ -269,7 +304,7 @@ div.tooltip {
 
 				//Add numeric labels chart 2
 				svg_chart2.selectAll('svg')
-					.data(dataset.sort(function(a, b){return b[0] - a[0];}))
+					.data(dataset.sort(function(a, b){return b[1] - a[1];}))
 					.enter()
 					.append("text")
 					.text(function(d) {return d[0];})
@@ -281,14 +316,148 @@ div.tooltip {
 					.attr("font-size", "13px")
 					.attr("fill","black")
 					.attr("text-anchor","start");
+				});
+	  
 
-			});
+	  //code for strip plots
+	  var strip_plot_height = 100
+	  var dataset = [];
+      var numDataPoints = 500;
+      var padding = 10
+      var opacity= .1;
+      var xRange = Math.random() * 1000;
+      var Strip_Circle_r = 4
+    //  console.log("xRange: "+xRange);
+
+      for (var i = 0; i < numDataPoints; i++) {
+          var newNumber1 = Math.floor(Math.random() * xRange);
+          dataset.push([newNumber1]);
+        //  console.log(newNumber1);
+        }
+
+      //generate a datapoint to mark with a triangle
+      var selData= [Math.floor(Math.random() * xRange)];
+      console.log("selection:"+selData);
+
+      
+      //calculate percentile of value
+      var sorted_dataset =  dataset.sort(function(a, b){return a-b}) 
+      var Num_Values = dataset.length
+      var Num_Greater_Than = 0
+      for (var i = 0; i < Num_Values; i++) {if(sorted_dataset[i]==selData[0]){Num_Greater_Than =i;}}      
+      var percentile = Num_Greater_Than/Num_Values
+
+
+      //scale 
+      var xScale = d3.scale.linear()
+                     .domain([0, d3.max(dataset, function(d) { return parseInt(d); })])
+                     .range([0+padding*2, w-padding*2]);
+
+      //Define X axis
+      var xAxis = d3.svg.axis()
+                .scale(xScale)
+                .orient("bottom")
+                .tickValues([d3.min(dataset, function(d) { return parseInt(d); }),d3.max(dataset, function(d) { return parseInt(d); })]);
+
+
+
+      var svg_strip1 = d3.select("#strip1")
+      .append("svg")
+      .attr("width",w)
+      .attr("height",strip_plot_height);
+      
+      var svg_strip2 = d3.select("#strip2")
+      .append("svg")
+      .attr("width",w)
+      .attr("height",strip_plot_height);
+
+      svg_strip1.selectAll("circle")
+         .data(dataset)
+         .enter()
+         .append("circle")
+         .attr("cx", function(d) {
+            return xScale(d);
+         })
+         .attr("cy", 70)
+         .attr("r", Strip_Circle_r)
+         .style({stroke: "#62b5d1", "stroke-width": "2px", fill:"#62b5d1", "opacity":opacity});
+
+
+      svg_strip1.selectAll("circleFocus")
+         .data(selData)
+         .enter()
+         .append("circle")
+         .attr("cx", function(d) {
+            return xScale(d);
+         })
+         .attr("cy", 70)
+         .attr("r", Strip_Circle_r)
+         .style({stroke: "red", "stroke-width": "2px",fill:"red"});
+
+      var percentile_box_width = 60 
+      var percentile_box_height = 30 
+      svg_strip1.selectAll("rect")
+         .data(selData)
+         .enter()
+         .append("rect")
+         .attr("width", percentile_box_width)
+         .attr("height", percentile_box_height)
+         .attr("x", function(d) {
+            return xScale(d)-percentile_box_width/2;
+         })
+         .attr("y", 30)
+         .style({stroke: "red", "stroke-width": "1px",fill:"white"});
+
+
+        //Create X axis
+      svg_strip1.append("g")
+        .attr("class", "axis")
+        .attr("transform", "translate("+0+"," + 70 + ")")
+        .call(xAxis);
 	
 
-	
+
+     svg_strip2.selectAll("circle")
+         .data(dataset)
+         .enter()
+         .append("circle")
+         .attr("cx", function(d) {
+            return xScale(d);
+         })
+         .attr("cy", 70)
+         .attr("r", Strip_Circle_r)
+         .style({stroke: "#62b5d1", "stroke-width": "2px", fill:"#62b5d1", "opacity":opacity});
 
 
+      svg_strip2.selectAll("circleFocus")
+         .data(selData)
+         .enter()
+         .append("circle")
+         .attr("cx", function(d) {
+            return xScale(d);
+         })
+         .attr("cy", 70)
+         .attr("r", Strip_Circle_r)
+         .style({stroke: "red", "stroke-width": "2px",fill:"red"});
 
+
+        //Create X axis
+      svg_strip2.append("g")
+        .attr("class", "axis")
+        .attr("transform", "translate("+0+"," + 70 + ")")
+        .call(xAxis);
+      
+      svg_strip2.selectAll("rect")
+         .data(selData)
+         .enter()
+         .append("rect")
+         .attr("width", percentile_box_width)
+         .attr("height", percentile_box_height)
+         .attr("x", function(d) {
+            return xScale(d)-percentile_box_width/2;
+         })
+         .attr("y", 30)
+         .style({stroke: "red", "stroke-width": "1px",fill:"white"});
 
 		</script>
 
