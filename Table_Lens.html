@@ -2,6 +2,8 @@
 <!DOCTYPE html>
 
 <style>
+
+/*set the containers for the two charts that make up the table lens.*/
 .container_chart1 {
   position: absolute;
   left: 0px;
@@ -14,6 +16,8 @@
   top: 150px;
   width: 400px;
 }
+
+/*set the container for the hover tooltip.*/
 div.tooltip {	
     position: absolute;			
     text-align: center;			
@@ -30,6 +34,7 @@ div.tooltip {
     z-index:5;			
 }
 
+/*set the container for the strip plots.*/
 .container_stripPlot1 {
   position: absolute;
   left: 0px;
@@ -40,6 +45,8 @@ div.tooltip {
   left: 500px;
   width: 400px;
 }
+
+/*css for the strip plot axis.*/
       .axis path,
       .axis line {
         fill: none;
@@ -61,6 +68,7 @@ div.tooltip {
     </head>
     <h2> Physicians' Pharma Relationships</h2>
     <body> 
+
     <!--add the divs for the strip plots above the plot titles. This will allow the two plots to share the title text-->
     <div class="container_stripPlot1" id="strip1">
 	</div>
@@ -75,10 +83,11 @@ div.tooltip {
 		<h4 align="center">Medicare Prescriptions Written - 2013</h4>
 	</div>    
         <script type="text/javascript">	
-        	//Doctor Name
+        	//variables for doctor name and physician ID
         	var Doctor_Name = "Dr. John Smith"
+        	var Physician_ID = 13444
 
-        	//Width and height
+        	//set variables for charts
 			var w = 400;
 			var h = 600;
 			var barPadding = 1;
@@ -86,6 +95,8 @@ div.tooltip {
 			var Main_bar_x_Scale_Start = 60
 			var padding = 40;
 			var barColor = "#62b5d1"
+
+			//svg for the two charts that make up the table lens
 			var svg_chart1 = d3.select("#chart1")
 			.append("svg")
 			.attr("width",w)
@@ -96,6 +107,7 @@ div.tooltip {
 			.attr("width",w)
 			.attr("height",h);
 
+			//div for hover tooltip
 			var div = d3.select("div").append("div")
 			    .attr("class", "tooltip")	
 			    .attr("id", "Hover_Graph")			
@@ -104,7 +116,8 @@ div.tooltip {
 			// var svg_tooltip = d3.select("#Hover_Graph")
 			// .append("svg");	
 
-	        d3.json("http://169.53.15.199:20900/mainTable/13444", function(data) {
+			//load data for main table and create the two charts. 
+	        d3.json("http://169.53.15.199:20900/mainTable/"+Physician_ID, function(data) {
 				jsn_Main_Table_Lens_Data = data.data
 				dataset = jsn_Main_Table_Lens_Data.map(function(a) {return [a.RxCnt,a.PmntCnt,a.Rx];});
 
@@ -114,7 +127,7 @@ div.tooltip {
 
 				var yScale = d3.scale.linear()
 					.domain([0,15])
-					.range([0 ,h ]); //reverse to y scale goes from bottom to top
+					.range([0 ,h ]);
 
 				//Create chart 1
 				svg_chart1.selectAll("rect")
@@ -135,12 +148,12 @@ div.tooltip {
 				   .on("mouseover", function(d) {	
 				   	bar_Value = d[2] //since we are using d again, we need to convert the orginal d to a new variable 
 
-				   	//get coordinates of the mouse
+				   	//get coordinates of the mouse to place tooltip next to cursor
 				   	var x_cord = d3.event.pageX;
 				   	var y_cord = d3.event.pageY;
 					
 					//load in hover data
-				    d3.json("http://169.53.15.199:20900/hoverTable/13444", function(data) {
+				    d3.json("http://169.53.15.199:20900/hoverTable/"+Physician_ID, function(data) {
 						dataset= data.data
 						jsn_HoverData = dataset.map(function(a) {return [a.Rx,a.PmntType,a.PmntCnt];});
 
@@ -318,8 +331,10 @@ div.tooltip {
 					.attr("text-anchor","start");
 				});
 	  
+////////////////////////////////
+//code for strip plots
+////////////////////////////////
 
-	  //code for strip plots
 	  var strip_plot_height = 100
 	  var dataset = [];
       var numDataPoints = 500;
@@ -360,7 +375,7 @@ div.tooltip {
                 .tickValues([d3.min(dataset, function(d) { return parseInt(d); }),d3.max(dataset, function(d) { return parseInt(d); })]);
 
 
-
+      //define separate svg for the strip plots           
       var svg_strip1 = d3.select("#strip1")
       .append("svg")
       .attr("width",w)
@@ -370,6 +385,8 @@ div.tooltip {
       .append("svg")
       .attr("width",w)
       .attr("height",strip_plot_height);
+
+
 
       svg_strip1.selectAll("circle")
          .data(dataset)
@@ -394,6 +411,7 @@ div.tooltip {
          .attr("r", Strip_Circle_r)
          .style({stroke: "red", "stroke-width": "2px",fill:"red"});
 
+      //create box for percentiles.
       var percentile_box_width = 60 
       var percentile_box_height = 30 
       svg_strip1.selectAll("rect")
@@ -416,7 +434,7 @@ div.tooltip {
         .call(xAxis);
 	
 
-
+      //Create second strip plot. All the same code as above currently 
      svg_strip2.selectAll("circle")
          .data(dataset)
          .enter()
