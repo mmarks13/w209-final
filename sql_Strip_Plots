@@ -1,12 +1,22 @@
 Use final;
 
-Select
+Select 
 PhysicianProfileID  
 ,PhysicianFirstName
 ,PhysicianLastName
 ,DrugName
 ,sum(AmountOfPaymentUSDollarsAgg) as PmtCnt
 ,sum(TotalClaimCountAgg) as RxCnt
+from OpenPaymentPrescrJoin4
+group by PhysicianProfileID  
+,PhysicianFirstName
+,PhysicianLastName
+,DrugName
+LIMIT 50;
+
+
+Select
+count(*)
 from OpenPaymentPrescrJoin4
 group by PhysicianProfileID  
 ,PhysicianFirstName
