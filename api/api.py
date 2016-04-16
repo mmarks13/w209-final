@@ -49,9 +49,10 @@ def generate(query):
         yield ']'+err+'}\n'
 
 @app.route('/sql')
-def doQuery():
+def doQuery(query=None):
     try:
-        query=request.values['query'].strip()
+        if not query:
+            query=request.values['query'].strip()
         if not query.endswith(';'):
             query+=';'
         return Response(generate(query), mimetype='application/json')
@@ -60,6 +61,21 @@ def doQuery():
             [json.dumps({'error': str(e)}), '\n'],
             status='500 Server exception',
             mimetype='application/json')
+@app.route('/specialties')
+def specialties():
+    return doQuery("SELECT Specialty FROM Specialties")
+
+@app.route('/ziploc/<zipcode>')
+def ziploc(zipcode):
+    resp='';
+    query="""SELECT CONCAT('{"lat":', ST_Y(loc), ',"lng":', ST_X(loc),'}') AS latlng FROM ZipLoc WHERE """;
+    query+='zip={};'.format(zipcode)
+    for ext in generate(query):
+        resp += ext;
+    resp=json.loads(resp)
+    if 'err' not in resp or not resp['err']:
+        return Response(resp['data'][0]['latlng'], status='200 OK')
+    return Response(resp['err'], status='500 Internal Server Error')
 
 def fakeQuery(filename):
     return Response(
@@ -78,8 +94,7 @@ def mainTable(physician=None):
         where='WHERE PhysicianProfileID={physician}'.format(physician=physician)
     else:
         where=''
-    return doQuery(
-'''SELECT 
+    return doQuery('''SELECT 
     DrugName,
     NameOfAssociatedCoveredDrugOrBiological1 as RxBrand,
     NDCOfAssociatedCoveredDrugOrBiological1  as RxNDC,
@@ -91,11 +106,11 @@ GROUP BY PhysicianProfileID
 {where};'''.format(where=where))
 
 
+
 @app.route('/hoverTable/<physician>')
 def hoverTable(physician):
     return fakeQuery('Hover_Table_Lens_Data.json');
-    return doQuery(
-'''SELECT 
+    return doQuery('''SELECT 
     DrugName,
     NameOfAssociatedCoveredDrugOrBiological1 as RxBrand,
     NDCOfAssociatedCoveredDrugOrBiological1  as RxNDC,
@@ -126,28 +141,19 @@ group by PhysicianProfileID
 order by sum(case when {column} is null then 0 Else {column} End) asc;'''.format(where=where, column = column)) 
 
 
-
-
 # This call enforces a rate limit of 1 per second to conform to OSM
 # Nominatim terms of use.  UI should restrict subsequent calls based
 # on the Retry-After response header, and can see the rate limit
 # params in X-RateLimit-* headers
-@limiter.shared_limit('1 per second', 'nominatim')
-@app.route('/locate/<loc>')
+
+#@limiter.shared_limit('1 per second', 'nominatim')
+#@app.route('/locate/<loc>')
 def locate(loc):
     return Response(
         [json.dumps(geolocator.geocode(loc, geometry='wkt'))],
         status='203 Non-Authoritative Information from OSM Nominatim',
         mimetype='application/json')
     
-@limiter.shared_limit('1 per second', 'nominatim')
-@app.route('/near/<lat>/<lon>/<radius>')
-def near(lat, lon, distance):
-    doQuery("""SELECT zip,ST_ASTEXT(loc)
-FROM final.ZipLoc 
-WHERE ST_WITHIN(loc, ST_BUFFER(POINT({lat},{lon}), {degs};"""
-            .format(lat=lat, lon=lon, degs=radius/69))
-
 
 if __name__=='__main__':
     engine.connect()
