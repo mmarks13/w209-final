@@ -1,0 +1,32 @@
+[
+  {
+    "Rx": "Abilify",
+    "RxCnt": 500,
+    "PmntCnt": 14000
+  },
+  {
+    "Rx": "Plavix",
+    "RxCnt": 398,
+    "PmntCnt": 5000
+  },
+  {
+    "Rx": "Avapro",
+    "RxCnt": 230,
+    "PmntCnt": 2000
+  },
+  {
+    "Rx": "Humira",
+    "RxCnt": 30,
+    "PmntCnt": 840
+  },
+  {
+    "Rx": "Enbrel",
+    "RxCnt": 80,
+    "PmntCnt": 230
+  },
+  {
+    "Rx": "Prozac",
+    "RxCnt": 67,
+    "PmntCnt": 0
+  }
+]

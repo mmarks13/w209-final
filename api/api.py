@@ -1,7 +1,9 @@
 #!/usr/bin/python
-from flask import Flask, Response,  request, send_from_directory
+from flask import Flask, Response, request, send_from_directory
+from flask.ext.compress import Compress
 from flask.ext.cors import CORS
 from flask_limiter import Limiter
+
 
 import ujson as json
 import logging
@@ -12,6 +14,7 @@ import pyproj
 import numpy as np
 
 app=Flask('w209dbapi')
+Compress(app)
 CORS(app)
 limiter = Limiter(
     app,
@@ -89,7 +92,7 @@ def fakeQuery(filename):
 @app.route('/mainTable/<physician>')
 def mainTable(physician=None):
     if 'real' not in request.values:
-        return fakeQuery('Main_Table_Lens_Data.json');
+        return fakeQuery('../json/Main_Table_Lens_Data.json');
     if physician:
         where='WHERE PhysicianProfileID={physician}'.format(physician=physician)
     else:
@@ -109,7 +112,7 @@ GROUP BY PhysicianProfileID
 
 @app.route('/hoverTable/<physician>')
 def hoverTable(physician):
-    return fakeQuery('Hover_Table_Lens_Data.json');
+    return fakeQuery('../json/Hover_Table_Lens_Data.json');
     return doQuery('''SELECT 
     DrugName,
     NameOfAssociatedCoveredDrugOrBiological1 as RxBrand,
@@ -154,6 +157,18 @@ def locate(loc):
         status='203 Non-Authoritative Information from OSM Nominatim',
         mimetype='application/json')
     
+
+# Static file paths:
+@app.route('/js/<path:path>')
+def serveStaticJS(path):
+    return send_from_directory('../js', path)
+@app.route('/html/<path:path>')
+def serveStaticHTML(path):
+    return send_from_directory('../html', path)
+@app.route('/rxplorer/<path:path>')
+def serveStaticRxPlorer(path):
+    return send_from_directory('../rxplorer', path)
+
 
 if __name__=='__main__':
     engine.connect()
