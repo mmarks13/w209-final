@@ -6,7 +6,7 @@ var sql=(function(module){
     }
 
     module._resetData={}
-    module.reset = function() {
+    module.reset_filters = function() {
 	Object.keys(module._resetData).forEach(function(attr) {
 	    module[attr]=module._resetData[attr];
 	});
@@ -69,24 +69,24 @@ var sql=(function(module){
 	}
 	var fn=module.firstName();
 	if(fn && fn.length>0) {
-	    where[`LCASE(PhysicianProfileFirstName)="${fn.toLowerCase()}"`]=1;
+	    where[`PhysicianProfileFirstName="${fn}"`]=1;
 	}
 	var mn=module.middleName();
 	if(mn && mn.length>0) {
-	    where[`LCASE(PhysicianProfileMiddleName)="${mn.toLowerCase()}"`]=1;
+	    where[`PhysicianProfileMiddleName="${mn}"`]=1;
 	}
 	var ln=module.lastName();
 	if(ln && ln.length>0) {
-	    where[`LCASE(PhysicianProfileLastName)="${ln.toLowerCase()}"`]=1;
+	    where[`PhysicianProfileLastName="${ln}"`]=1;
 	}
 	var sn=module.sfxName();
 	if(sn && sn.length>0) {
-	    where[`LCASE(PhysicianProfileSuffix)="${sn.toLowerCase()}"`]=1;
+	    where[`PhysicianProfileSuffix="${sn}"`]=1;
 	}
 		
 	var addr=module.addr();
 	if(addr && addr.length>0) {
-	    where[`InAddress like "${'%'+addr.toLowerCase()+'%'}"`]=1;
+	    where[`InAddress like "${'%'+addr+'%'}"`]=1;
 	}
 	var zip=module.zip();
 	if(zip && zip.length>0) {

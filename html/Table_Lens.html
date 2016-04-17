@@ -117,7 +117,8 @@ div.tooltip {
 			// .append("svg");	
 
 			//load data for main table and create the two charts. 
-	        d3.json("http://169.53.15.199:20900/mainTable/"+Physician_ID, function(data) {
+			d3.json("http://169.53.15.199:20900/mainTable/"+Physician_ID, function(data) {
+			    console.log("got data", data);
 				jsn_Main_Table_Lens_Data = data.data
 				dataset = jsn_Main_Table_Lens_Data.map(function(a) {return [a.RxCnt,a.PmntCnt,a.Rx];});
 

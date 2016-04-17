@@ -1,0 +1,49 @@
+.ps-entry-section {
+    display: block;
+    padding-top: 1em;
+}
+
+.ps-entry {
+    display: inline-block;
+    width: 30%;
+    padding-right: 3%
+}
+
+.ps-filter-section {
+    display: block;
+}
+.ps-filter {
+    display: inline-block;
+}
+
+.ps-filter span {
+    width 15%;
+}
+.ps-filter select {
+    width: 85%;
+}
+
+.ps-filter input {
+    width: 90%;
+}
+
+.ps-status-ok {
+    background-color: #AAFFAA;
+    fill: #AAFFAA;
+}
+.ps-status-warn {
+    background-color: #FFFAAA;
+    fill: #FFFFAA;
+}
+.ps-status-err {
+    background-color: #FFAAAA;
+    fill: #FFAAAA;
+}
+
+.ps-map {
+    display: block;
+    height: 60%
+}
+.ps-results {
+    display: block;
+}

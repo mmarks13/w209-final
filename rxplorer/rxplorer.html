@@ -3,24 +3,79 @@
   <head>
     <title>Physician RxPlorer</title>
     <meta charset="utf-8"/>
-    <link rel="stylesheet" href="rxplorer.css" />
+    <meta name="viewport" content="width=device-width, height=device-height, initial-scale=1"/>
     <link rel="stylesheet" href="/css/leaflet.css" />
     <link rel="stylesheet" href="/css/jquery.dataTables.min.css"/>
+    <link rel="stylesheet" href="rxplorer-physician.css"/>
     <script src="/js/jquery-2.2.3.min.js"></script>
     <script src="/js/d3.min.js"></script>
     <script src="/js/leaflet.js"></script>
     <script src="/js/jquery.dataTables.min.js"></script>
     <script src="/js/oboe-browser.min.js"></script>
-  </head>
-  <body>
-    <div class="title">Physician R<sub>x</sub>Plorer</div>
-    <div class="subtitle">Visualizing the relationship between pharmaceutical company payments and drug prescriptions</div>
-    <div id="physician-selector"> </div>
-    
     <script src="rxplorer-sql.js"></script>
     <script src="rxplorer-map.js"></script>
     <script src="rxplorer-specialties.js"></script>
     <script src="rxplorer-physician.js"></script>
-    <script src="rxplorer.js"></script>
+    <script src="rxplorer-tl.js"></script>
+    <style>
+      * { vertical-align:top; }
+
+      /* inline-block diplay + a bit under half width to make these into 2 columns */
+      #rx-physician-selector #rx-table-lens{
+          width: 48%;
+          display: inline-block;
+      }
+
+      /* make headings more uniform */
+      h1,h2,h3,h4,h5,h6 {
+          font-family: sans;
+          font-weight: bold;
+      }
+      h1,.rx-title {
+          font-size: xx-large;
+      }
+      h2,.rx-subtitle {
+          font-size: x-large;
+          font-style: oblique;
+          padding-bottom: 1em;
+      }
+      h3,.rx-heading {
+	  font-weight: medium;
+          font-size: large;
+          padding-bottom: 1ex;
+      }      
+      h3,.rx-subheading {
+	  font-weight: medium;
+          font-size: medium;
+          font-style: oblique;
+          padding-bottom: 1ex;
+      }      
+    </style>
+  </head>
+  <body>
+    <!-- Final project notes: we just define a few empty div in the
+         HTML.  Since they're top-level items and we care about each
+         one's identity, they have IDs.  In JS, we select them by ID
+         and pass them to the module that fill in their content using
+         DOM.
+
+         These modules identify their inserted content underneath the
+         provided container by class rather than ID, so that we could
+         have two containers on the same page with independent
+         instances. -->
+    
+	 Javascript modules fill in their contents
+    <h1 class="rx-title">Physician R<sub>x</sub>Plorer</h1>
+    <h2 class="rx-subtitle">Visualizing the relationship between pharmaceutical company payments and drug prescriptions</h2>
+    <div>
+      <div id="rx-physician-selector"> </div>
+      <div id="rx-table-lens"> </div>
+    </div>
+    <script>
+      $(document).ready(function(){
+          physician.init($('#rx-physician-selector'));
+          physician.on_results_table_row_click(d3.select('#rx-table-lens'));
+      });
+    </script>
   </body>
 </html>

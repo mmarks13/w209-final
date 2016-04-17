@@ -1,4 +1,18 @@
 var map=(function(module){
+    module.init = function(selector) {
+	module.map = L.map(selector);
+	module.Marker = L.Marker.extend({
+	    options: {
+		related: null
+	    }
+	});
+	L.tileLayer('http://{s}.tile.osm.org/{z}/{x}/{y}.png', {
+	    attribution: '&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors'
+	}).addTo(module.map);
+	module.reset();
+	return module;
+    }
+
     module.reset = function() {
 	module._max_bounds =
 	    L.latLngBounds(
@@ -20,15 +34,6 @@ var map=(function(module){
 	return module._zoom;
     }
     
-    module.init = function(selector) {
-	module.map = L.map(selector);
-	L.tileLayer('http://{s}.tile.osm.org/{z}/{x}/{y}.png', {
-	    attribution: '&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors'
-	}).addTo(module.map);
-	module.reset();
-	return module;
-    }
-
     module.refresh = function(options) {
 	console.log(options);
 	var center=map.map.getCenter();
@@ -47,11 +52,6 @@ var map=(function(module){
 	return module;
     }
     
-    module.Marker = L.Marker.extend({
-	options: {
-	    related: null
-	}
-    });
     module._markers=[]
     module.addMarker = function(loc, relItem, msg) {
 	var marker=new module.Marker(loc, {related: relItem});

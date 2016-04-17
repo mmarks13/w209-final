@@ -1,74 +1,129 @@
-//set variables for charts
 // factory for little helper objects to hold each chart's brains
 var tableLens=(function(module) {
+    // Object.assign copies key/vals from sources to targets; we'll
+    // use it to merge objects containing options, but without
+    // overwriting (so we need a temp object to return).
+    module.merge_opts = function() {
+	// put all the received arguments into an array `args`
+	var args=Array.prototype.slice.call(arguments);
+	// add an empty object to the front of args, for the others to be copied into
+	args.unshift({});
+	// call assign using the contents of args as fn call arguments
+	Object.assign.apply(null, args);
+	// return the filled object
+	return args[0];
+    }
+
     module._defaults={
-	w: 400,
-	h: 600,
+	//width:    400, // computed now
+	height:   600,
+	padding:   40,
 	barPadding: 1,
 	barHeight: 27,
-	Main_bar_x_Scale_Start: 60,
-	padding: 40,
+	barXStart: 60,
+	barCount:  15,
 	barColor: "#62b5d1"
     };
-    module.Chart = function(sel, fieldId, opts) {
-	var chart={};
-	chart.svg=sel.append("svg");
-	chart.svg.attr("width",opts.w)
-	    .attr("height",opts.h);
-	chart.xScale = d3.scale.linear()
-	    .domain([0,1]) // max is a placeholder; update when adding data
-	    .range([opts.Main_bar_x_Scale_Start, opts.w-120]);
-	chart.yScale = d3.scale.linear()
-	    .domain([0,15])
-	    .range([0, opts.h]);
-	chart.fld_id=fieldId;
-	chart.data=[];
+    module.Chart = function(sel, chart_opts) {
+	// user-provided options take precedence, so our computed width can be overridden if desired.
+	var chart=module.merge_opts({
+   	        svg: sel.append('svg'),
+	        xScale: d3.scale.linear(),
+	        yScale: d3.scale.linear(),
+  	        width: sel.node().getBoundingClientRect().width,
+	        quant_pfx: '',
+	        data: []
+	    },
+	    chart_opts);
+	// set up d3 charting
+	chart.svg
+	    .attr("width",chart.width)
+	    .attr("height",chart.height);
+	// X domain max is a placeholder; update when adding data
+	chart.xScale
+	    .domain([0,0])
+	    .range([chart.barXStart, chart.width-120]);
+	chart.yScale
+	    .domain([0, chart.barCount])
+	    .range([0, chart.height]);
+	// routine to add data to the chart
 	chart.add=function(row) {
 	    var xdom=chart.xScale.domain();
-	    if(xdom[1] < row[chart.fld_id]) {
-		xdom[1]=row[chart.fld_id];
+	    if(xdom[1] < row[chart.quant_fld]) {
+		xdom[1]=row[chart.quant_fld];
 		chart.xScale.domain(xdom);
 	    }
 	    chart.data.push(row);
-	    var bars=chart.svg.selectAll('rect')
+	    chart.data.sort(function(a,b){
+		return b[chart.quant_fld]-a[chart.quant_fld]
+	    });
+	    // add bars
+	    var bars=chart.svg
+		.selectAll('g')
 		.data(chart.data)
-		.attr("x", function(d, i) {
-		    return chart.xScale(i);
-		})
-		.enter()
-		.append('rect')
-		.attr("x", function(d, i) {
-		    return chart.xScale(i);
-		})
+		.enter();
+	    bars.append('rect')
 		.attr("y", function(d, i) {
 		    return chart.yScale(i);
 		})
-		.attr("height", opts.barHeight)
-		.attr("fill", d3.rgb(opts.barColor))
-	    ;	    
-
+		.attr("x", chart.barXStart)
+		.attr("height", chart.barHeight)
+		.attr("fill", d3.rgb(chart.barColor))
+		.attr("width", function(d, i) {
+		    return chart.xScale(d[chart.quant_fld]);
+		});
+	    // add rx labels
+	    bars.append('text')
+		.text(function(d) {return d[chart.label_fld]})
+	    	.attr("x", chart.barXStart-1)
+		.attr("y", function(d, i) {
+		    return chart.yScale(i)+6;
+		})
+		.attr("text-anchor","end")
+		.attr('class', 'tl-rxlabel');
+	    // add quantitative value labels
+	    bars.append('text')
+		.text(function(d) {
+		    return chart.quant_pfx+d[chart.quant_fld].toString()
+		})
+		.attr("x", function(d) {
+		    return xScale(d[chart.quant_fld])+chart.barXStart+2;
+		})
+		.attr("y", function(d, i) {
+		    return yScale(i)+6;
+		})
+		.attr("text-anchor","end")
+		.attr('class', 'tl-quantlabel');
 	    return chart;
 	}
-	console.log(chart);
 	return chart;
     }
     
     module.init=function(physName, physId, userOpts) {
-	var opts={};
-	Object.assign(opts, module._defaults, userOpts);
-
-	// dynamic chart update from
-	// https://bl.ocks.org/RandomEtc/cff3610e7dd47bef2d01
-
+	var opts=module.merge_opts();
 	//TODO: rename var to PmntTot
-	var chart1=new module.Chart(d3.select("#tl-chart1"), 'PmntCnt', opts);
-	var chart2=new module.Chart(d3.select("#tl-chart2"), 'RxCnt', opts);
-	
+	module.chart1=new module.Chart(d3.selectAll("#tl-chart1"),
+				       module.merge_opts({
+					   'quant_fld': 'PmntCnt',
+					   'label_fld': 'Rx',
+					   'quant_pfx': '$'
+  				         },
+					 module._defaults,
+					 userOpts));
+	module.chart2=new module.Chart(d3.selectAll("#tl-chart2"),
+				       module.merge_opts({
+					   'quant_fld': 'RxCnt',
+					   'label_fld': 'Rx',
+  				         },
+					 module._defaults,
+					 userOpts));
+
 	//load data for main table and create the two charts.
-	oboe("http://169.53.15.199:20900/mainTable/"+physId)
+	oboe("http://169.53.15.199:20900/mainTable/"+physId+"?real")
 	    .node({
 		'data.*': function(row){
-		    chart1.add(row);
+		    module.chart1.add(row);
+		    module.chart2.add(row);
 		},
 		'err': function(err) {
 		    if(err) {
@@ -79,7 +134,7 @@ var tableLens=(function(module) {
 //	    addRow(sel, 
 //	    var xScale = d3.scale.linear()
 //		.domain([0,d3.max(dataset,function(d){return d[1];})])
-//		.range([Main_bar_x_Scale_Start ,w-120 ]);
+//		.range([barXStart ,w-120 ]);
 //	    
 //	    var yScale = d3.scale.linear()
 //		.domain([0,15])
@@ -94,7 +149,7 @@ var tableLens=(function(module) {
 //	    .attr("y", function(d, i) {
 //		return yScale(i);
 //	    })
-//	    .attr("x", Main_bar_x_Scale_Start)
+//	    .attr("x", barXStart)
 //	    .attr("height", barHeight)
 //	    .attr("width", function(d) {
 //		return xScale(d[1]);
@@ -209,7 +264,7 @@ var tableLens=(function(module) {
 //	
 //	var xScale_chart2 = d3.scale.linear()
 //	    .domain([0,d3.max(dataset,function(d){return d[0];})])
-//	    .range([Main_bar_x_Scale_Start ,w-120 ]);
+//	    .range([barXStart ,w-120 ]);
 //
 //
 //	//Create chart 2
@@ -220,7 +275,7 @@ var tableLens=(function(module) {
 //	    .attr("y", function(d, i) {
 //		return yScale(i);
 //	    })
-//	    .attr("x", Main_bar_x_Scale_Start)
+//	    .attr("x", barXStart)
 //	    .attr("height", barHeight)
 //	    .attr("width", function(d) {
 //		return xScale_chart2(d[0]);
@@ -234,7 +289,7 @@ var tableLens=(function(module) {
 //	    .enter()
 //	    .append("text")
 //	    .text(function(d) {return d[2]})
-//	    .attr("x", Main_bar_x_Scale_Start -4)
+//	    .attr("x", barXStart -4)
 //	    .attr("y", function(d, i) {
 //		return yScale(i)+barHeight/2+5;
 //	    })
@@ -249,7 +304,7 @@ var tableLens=(function(module) {
 //	    .enter()
 //	    .append("text")
 //	    .text(function(d) {return d[2]})
-//	    .attr("x", Main_bar_x_Scale_Start -4)
+//	    .attr("x", barXStart -4)
 //	    .attr("y", function(d, i) {
 //		return yScale(i)+barHeight/2+5;
 //	    })
@@ -264,7 +319,7 @@ var tableLens=(function(module) {
 //	    .enter()
 //	    .append("text")
 //	    .text(function(d) {return "$"+ d[1]})
-//	    .attr("x", function(d) {return  xScale(d[1])+Main_bar_x_Scale_Start+2;})
+//	    .attr("x", function(d) {return  xScale(d[1])+barXStart+2;})
 //	    .attr("y", function(d, i) {
 //		return yScale(i)+barHeight/2+5;
 //	    })
@@ -278,7 +333,7 @@ var tableLens=(function(module) {
 //	    .enter()
 //	    .append("text")
 //	    .text(function(d) {return d[0];})
-//	    .attr("x", function(d) {return xScale_chart2(d[0])+Main_bar_x_Scale_Start+2;})
+//	    .attr("x", function(d) {return xScale_chart2(d[0])+barXStart+2;})
 //	    .attr("y", function(d, i) {
 //		return yScale(i)+barHeight/2+5;
 //	    })
@@ -439,4 +494,3 @@ var tableLens=(function(module) {
 
     return module;
 }(tableLens||{}));
-tableLens.init("Dr X", 10100);

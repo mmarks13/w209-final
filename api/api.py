@@ -1,8 +1,7 @@
-#!/usr/bin/python
+#!/usr/bin/env python
 from flask import Flask, Response, request, send_from_directory
 from flask.ext.compress import Compress
 from flask.ext.cors import CORS
-
 
 import ujson as json
 import sqlalchemy
@@ -154,6 +153,7 @@ FROM OpenPaymentPrescrJoin4
 {where}
 GROUP BY PhysicianProfileID
 ORDER BY Count ASC;'''.format(where=where, column=column), generateArray) 
+
 
 # Static file paths:
 @app.route('/js/<path:path>')

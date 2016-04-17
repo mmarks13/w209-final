@@ -1,35 +1,29 @@
 * { vertical-align:top; }
 
-#physician-selector {
-    width: 100%;
+#rx-physician-selector #rx-table-lens{
+    width: 48%;
+    display: inline-block;
 }
 
-.title {
+.physician-map {
+    width: 48%;
+    height: 400px;
+}
+
+h1 {
     font-size: x-large;
     font-family: sans;
     font-weight: bold;
 }
-.subtitle {
+h2 {
     font-size: large;
     padding-bottom: 1em;
     font-family: sans;
     font-style: oblique;
 }
-
-.entry-section {
-    display: block;
-    padding-top: 1em;
-}
-
-
-.entry {
-    display: inline-block;
-    width: 30%;
-    padding-right: 3%
-}
-.entry select {
-    width: 100%;
-}
-.entry input {
-    width: 100%;
+h3 {
+    font-size: medium;
+    padding-bottom: 1ex;
+    font-family: sans;
+    font-style: oblique;
 }
