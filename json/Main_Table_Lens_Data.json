@@ -1,32 +1,35 @@
-[
+{
+"data": [
   {
     "Rx": "Abilify",
     "RxCnt": 500,
-    "PmntCnt": 14000
+    "PmntTot": 14000.01
   },
   {
     "Rx": "Plavix",
     "RxCnt": 398,
-    "PmntCnt": 5000
+    "PmntTot": 5000.34
   },
   {
     "Rx": "Avapro",
     "RxCnt": 230,
-    "PmntCnt": 2000
+    "PmntTot": 2000.15
   },
   {
     "Rx": "Humira",
     "RxCnt": 30,
-    "PmntCnt": 840
+    "PmntTot": 840.22
   },
   {
     "Rx": "Enbrel",
     "RxCnt": 80,
-    "PmntCnt": 230
+    "PmntTot": 230.11
   },
   {
     "Rx": "Prozac",
     "RxCnt": 67,
     "PmntCnt": 0
   }
-]
+],
+"err": ""
+}

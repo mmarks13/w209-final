@@ -1,57 +1,60 @@
-[
+{
+"data": [
   {
     "Rx": "Abilify",
     "PmntType": "Research",
-    "PmntCnt": 10000
+    "PmntTot": 10000
   },
   {
     "Rx": "Abilify",
     "PmntType": "Travel",
-    "PmntCnt": 3000
+    "PmntTot": 3000
   },
   {
     "Rx": "Abilify",
     "PmntType": "Food and Gifts",
-    "PmntCnt": 1000
+    "PmntTot": 1000
   },
   {
     "Rx": "Plavix",
     "PmntType": "Travel",
-    "PmntCnt": 4000
+    "PmntTot": 4000
   },
   {
     "Rx": "Plavix",
     "PmntType": "Food and Gifts",
-    "PmntCnt": 1000
+    "PmntTot": 1000
   },
   {
     "Rx": "Avapro",
     "PmntType": "Food and Gifts",
-    "PmntCnt": 1000
+    "PmntTot": 1000
   },
   {
     "Rx": "Avapro",
     "PmntType": "Travel",
-    "PmntCnt": 600
+    "PmntTot": 600
   },
   {
     "Rx": "Avapro",
     "PmntType": "Research",
-    "PmntCnt": 400
+    "PmntTot": 400
   },
   {
     "Rx": "Humira",
     "PmntType": "Food and Gifts",
-    "PmntCnt": 620
+    "PmntTot": 620
   },
   {
     "Rx": "Humira",
     "PmntType": "Travel",
-    "PmntCnt": 220
+    "PmntTot": 220
   },
   {
     "Rx": "Enbrel",
     "PmntType": "Food and Gifts",
-    "PmntCnt": 230
+    "PmntTot": 230
   }
-]
+],
+"err": ""
+}

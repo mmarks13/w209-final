@@ -2,28 +2,16 @@
 from flask import Flask, Response, request, send_from_directory
 from flask.ext.compress import Compress
 from flask.ext.cors import CORS
-from flask_limiter import Limiter
 
 
 import ujson as json
-import logging
-import gdal
 import sqlalchemy
-from geopy.geocoders import Nominatim
-import pyproj
 import numpy as np
 
 app=Flask('w209dbapi')
 Compress(app)
 CORS(app)
-limiter = Limiter(
-    app,
-    key_func=lambda: '1' # for all users
-)
 engine = sqlalchemy.create_engine('mysql://reader@localhost/final', echo=True)
-logger = logging.getLogger('w209dbapi')
-geolocator=Nominatim(country_bias='US', user_agent="student final project: UC-B MIDS W209: Data Visualization contact: nk@ischool.berkeley.edu")
-
 
 @app.route('/')
 def root():
@@ -32,7 +20,7 @@ def root():
             mimetype='text/plain')
 
 
-def generate(query):
+def generateDict(query):
     err=''
     yield '{"data": ['
     try:
@@ -51,8 +39,37 @@ def generate(query):
     finally:
         yield ']'+err+'}\n'
 
+def generateArray(query):
+    err=''
+    yield '{'
+    try:
+        cursor=engine.execute(query)
+        yield '"keys":{keys},"data": ['.format(keys=json.dumps(cursor.keys()))
+        try:
+            pfx=''
+            while True:
+                rows=cursor.fetchmany()
+                if not rows:
+                    break
+                for row in rows:
+                    vals=[]
+                    for key in cursor.keys():
+                        if row.has_key(key):
+                            vals.append(row[key])
+                        else:
+                            vals.append(None)
+                    yield  pfx+json.dumps(vals)
+                    if not pfx:
+                        pfx=','
+        finally:
+            yield ']'
+    except Exception,e:
+        err=',"error":' + json.dumps(str(e))
+    finally:
+        yield err+'}\n'
+
 @app.route('/sql')
-def doQuery(query=None):
+def doQuery(query=None, generate=generateDict):
     try:
         if not query:
             query=request.values['query'].strip()
@@ -80,83 +97,63 @@ def ziploc(zipcode):
         return Response(resp['data'][0]['latlng'], status='200 OK')
     return Response(resp['err'], status='500 Internal Server Error')
 
-def fakeQuery(filename):
-    return Response(
-        '{'+'"data":{data},"err":""'.format(
-            data=open(filename).read())+'}',
-        status='200 OK',
-        mimetype='application/json')
-
-
 @app.route('/mainTable/')
 @app.route('/mainTable/<physician>')
 def mainTable(physician=None):
-    if 'real' not in request.values:
-        return fakeQuery('../json/Main_Table_Lens_Data.json');
+    if 'fake' in request.values:
+        return send_from_directory('../json', 'Main_Table_Lens_Data.json')
     if physician:
         where='WHERE PhysicianProfileID={physician}'.format(physician=physician)
     else:
         where=''
     return doQuery('''SELECT 
-    DrugName,
-    NameOfAssociatedCoveredDrugOrBiological1 as RxBrand,
-    NDCOfAssociatedCoveredDrugOrBiological1  as RxNDC,
-    TotalClaimCountAgg                       as RxCount,
-    NumberOfPaymentsIncludedInTotalAmountAgg as PaymentCount,
-    AmountOfPaymentUSDollarsAgg              as PaymentTotal
+    NameOfAssociatedCoveredDrugOrBiological1      AS Rx,
+    NDCOfAssociatedCoveredDrugOrBiological1       AS RxNDC,
+    SUM(TotalClaimCountAgg)                       AS RxCnt,
+    SUM(NumberOfPaymentsIncludedInTotalAmountAgg) AS PmntCnt,
+    SUM(AmountOfPaymentUSDollarsAgg)              AS PmntTot
 FROM OpenPaymentPrescrJoin4
-GROUP BY PhysicianProfileID
-{where};'''.format(where=where))
+{where}
+GROUP BY Rx;'''.format(where=where))
 
 
 
 @app.route('/hoverTable/<physician>')
 def hoverTable(physician):
-    return fakeQuery('../json/Hover_Table_Lens_Data.json');
-    return doQuery('''SELECT 
-    DrugName,
-    NameOfAssociatedCoveredDrugOrBiological1 as RxBrand,
-    NDCOfAssociatedCoveredDrugOrBiological1  as RxNDC,
-    TotalClaimCountAgg                       as RxCount,
-    NumberOfPaymentsIncludedInTotalAmountAgg as PaymentCount,
-    AmountOfPaymentUSDollarsAgg              as PaymentTotal
+    if 'real' not in request.values:
+        return send_from_directory('../json', 'Hover_Table_Lens_Data.json')
+    # todo: fix this!
+    return doQuery('''SELECT
+  NameOfAssociatedCoveredDrugOrBiological1      AS Rx,
+  NDCOfAssociatedCoveredDrugOrBiological1       AS RxNDC,
+  SUM(TotalClaimCountAgg)                       AS RxCnt,
+  SUM(NumberOfPaymentsIncludedInTotalAmountAgg) AS PmntCnt,
+  SUM(AmountOfPaymentUSDollarsAgg)              AS PmntTot
 FROM OpenPaymentPrescrJoin4
-WHERE PhysicianProfileID={physician} ;'''.format(physician=physician))
+WHERE PhysicianProfileID={physician}
+GROUP BY Rx;'''.format(physician=physician))
 
-
-@app.route('/histogramData/<column>/')
+@app.route('/histogramData/<column>')
 @app.route('/histogramData/<column>/<drug>')
-def StripPlot(column,drug = None):
-    return Response(json.dumps({
-  'data': np.random.randint(0,10000,1000).tolist(),
-  'error': None
-    }), status='200 OK'); 
+def histogram(column, drug = None):
+    if 'fake' in request.values:
+        count=np.random.randint(0,10000,1000).tolist()
+        return Response(
+            json.dumps({'data': [ {'count': x} for x in count ],
+                 'err': ''
+            }),
+            status='200 OK');
     if drug:
-        where='WHERE drug={drug}'.format(drug=drug)
+        where="""WHERE NameOfAssociatedCoveredDrugOrBiological1='{drug}'""".format(drug=drug)
     else:
         where=''
     return doQuery(
-'''SELECT 
-sum(case when {column} is null then 0 Else {column} End) as Count
-from OpenPaymentPrescrJoin4
-group by PhysicianProfileID
+'''SELECT
+   SUM(coalesce({column},0)) as Count
+FROM OpenPaymentPrescrJoin4
 {where}
-order by sum(case when {column} is null then 0 Else {column} End) asc;'''.format(where=where, column = column)) 
-
-
-# This call enforces a rate limit of 1 per second to conform to OSM
-# Nominatim terms of use.  UI should restrict subsequent calls based
-# on the Retry-After response header, and can see the rate limit
-# params in X-RateLimit-* headers
-
-#@limiter.shared_limit('1 per second', 'nominatim')
-#@app.route('/locate/<loc>')
-def locate(loc):
-    return Response(
-        [json.dumps(geolocator.geocode(loc, geometry='wkt'))],
-        status='203 Non-Authoritative Information from OSM Nominatim',
-        mimetype='application/json')
-    
+GROUP BY PhysicianProfileID
+ORDER BY Count ASC;'''.format(where=where, column=column), generateArray) 
 
 # Static file paths:
 @app.route('/js/<path:path>')
@@ -168,7 +165,6 @@ def serveStaticHTML(path):
 @app.route('/rxplorer/<path:path>')
 def serveStaticRxPlorer(path):
     return send_from_directory('../rxplorer', path)
-
 
 if __name__=='__main__':
     engine.connect()
