@@ -152,12 +152,17 @@ ORDER BY Count ASC;'''.format(where=where, column=column), generateArray)
 
 
 # Static file paths:
-@app.route('/js/<path:path>')
-def serveStaticJS(path):
+@app.route('/css/<path:path>')
+def serveStaticCSS(path):
     return send_from_directory('../js', path)
 @app.route('/html/<path:path>')
 def serveStaticHTML(path):
     return send_from_directory('../html', path)
+@app.route('/images/<path:path>')
+def serveStaticImages(path):
+@app.route('/js/<path:path>')
+def serveStaticJS(path):
+    return send_from_directory('../js', path)
 @app.route('/rxplorer/<path:path>')
 def serveStaticRxPlorer(path):
     return send_from_directory('../rxplorer', path)
