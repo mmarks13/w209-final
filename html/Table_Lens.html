@@ -85,7 +85,7 @@ div.tooltip {
         <script type="text/javascript">	
         	//variables for doctor name and physician ID
         	var Doctor_Name = "Dr. John Smith"
-        	var Physician_ID = 13444
+        	var Physician_ID = 100180
 
         	//set variables for charts
 			var w = 400;
@@ -120,7 +120,7 @@ div.tooltip {
 			d3.json("http://169.53.15.199:20900/mainTable/"+Physician_ID, function(data) {
 			    console.log("got data", data);
 				jsn_Main_Table_Lens_Data = data.data
-				dataset = jsn_Main_Table_Lens_Data.map(function(a) {return [a.RxCnt,a.PmntCnt,a.Rx];});
+				dataset = jsn_Main_Table_Lens_Data.map(function(a) {return [Math.round(a.RxCnt),Math.round(a.PmntTot),a.Rx];});
 
 				var xScale = d3.scale.linear()
 					.domain([0,d3.max(dataset,function(d){return d[1];})])
