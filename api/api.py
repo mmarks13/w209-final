@@ -124,9 +124,7 @@ def hoverTable(physician):
     # todo: fix this!
     return doQuery('''SELECT
   NameOfAssociatedCoveredDrugOrBiological1      AS Rx,
-  NDCOfAssociatedCoveredDrugOrBiological1       AS RxNDC,
-  SUM(TotalClaimCountAgg)                       AS RxCnt,
-  SUM(NumberOfPaymentsIncludedInTotalAmountAgg) AS PmntCnt,
+  NatureOfPaymentOrTransferOfValue              AS PmntType,
   SUM(AmountOfPaymentUSDollarsAgg)              AS PmntTot
 FROM OpenPaymentPrescrJoin4
 WHERE PhysicianProfileID={physician}
