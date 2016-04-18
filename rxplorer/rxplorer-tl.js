@@ -107,8 +107,8 @@ var tableLens=(function(module) {
 	return chart;
     }
     
-    module.init=function(selector, physician, opts) {
-	//TODO: rename var to PmntTot
+    module.init=function(selector_str, physician, opts) {
+	var selector=d3.select(selector);
 	module.chart1=new module.Chart(selector.selectAll(".tl-payments .tl-chart"),
 				       module.merge_opts({
 					   'quant_fld': 'PmntTot',
@@ -126,7 +126,7 @@ var tableLens=(function(module) {
 					 opts));
 
 	//load data for main table and create the two charts.
-	oboe("http://169.53.15.199:20900/mainTable/"+physId+"?real")
+	oboe("http://169.53.15.199:20900/mainTable/"+physician.physId+"?real")
 	    .node({
 		'data.*': function(row){
 		    module.chart1.add(row);
