@@ -3,19 +3,16 @@ var physician=(function(module) {
     // and plug in events to respond to them.
     module.add_controls=function(sel) {
 	// draw the control bar
+	sel.append($('<h4>')
+		   .addClass('rx-subheading')
+		   .text('Search controls'));
 	sel.html(
 	    `<div class='ps-controls'>
-		Find your doctors: <br />
+		<h3 class='rx-heading'>Find your doctors: </h3>
 		<button class='ps-refresh'>Retrieve providers</button>
 		<button class='ps-reset' type='reset'>Reset</button>
 		<img    class='ps-progress-spinner' src='progress.gif' />
 	    </div>`);
-	sel.find('.ps-progress-spinner')
-	    .css({
-		'display': 'none',
-		'height': 32,
-		'width': 32
-	    });
 	// attach event callbacks
 	sel.find('.ps-refresh').on('click', function(){
 	    module.update_providers();
@@ -27,39 +24,23 @@ var physician=(function(module) {
 
     // Status indicator controls routines
     // helper to set the status CSS classes
-    module.status_set_classes=function(sel, ok, warn, err){
-	sel=$(sel)
-	sel.toggleClass('ps-status-ok', ok)
-	    .toggleClass('ps-status-warn', warn)
-	    .toggleClass('ps-status-err', err);
-	return sel;
-    }
-    // set visual status indicators
-    // The status dot's title text is set to msg.
-    // Status classes will be set as specified on all elements in the provided selector.
-    module.status_set=function(sel, msg, ok, warn, err){
-	module.status_set_classes(sel, ok, warn, err)
+    module.status=function(sel, type, msg) {
+	module.status_clear(sel);
+	return $(sel)
+	    .addClass('ps-status-'+type, true)
 	    .attr('title', msg);
-    }	
-    module.status_none=function(sel) {
-	module.status_set(sel, ''. false, false, false);
-    }	
-    module.status_ok=function(sel, msg) {
-	module.status_set(sel, msg, true, false, false);
     }
-    module.status_warn=function(sel, msg) {
-	module.status_set(sel, msg, false, true, false);
+    module.status_clear=function(sel) {
+	return $(sel)
+	    .removeClass('ps-status-err')
+	    .removeClass('ps-status-warn')
+	    .removeAttr('title');
     }
-    module.status_err=function(sel, msg) {
-	module.status_set(sel, msg, false, false, true);
+    module.status_clear_all=function(type) {
+	module.status_clear($('.ps-status-warn,.ps-status-err'));
     }
 
     // Helpers for SQL Filter inputs
-
-    // Variable to keep track of info to reset each filter
-    // input/widget. Keys are DOM selectors, values are default values
-    // or functions to call on the selector.
-    module._sqlFilterInputs={};
 
     // Helper to connect the change event for an input to an
     //   rxplorer-sql filter and stash its resetting metadata.
@@ -67,18 +48,19 @@ var physician=(function(module) {
     //   function to clean up the filter if reset is clicked.
     // xform is an optional function to turn the event target into an
     //   acceptable input to the sql module's filter setter.
-    module.sqlFilterCallback = function(sel, method, resetter, xform) {
+    module._sql_filter_resetters={}
+    module.sql_filter_callback=function(sel, method, resetter, xform) {
+	module._sql_filter_resetters[sel]=resetter||'';
 	var elt=module.root.find(sel);
-	module._sqlFilterInputs[elt]=resetter||'';
 	if(!xform) {
-	    module.root.find(sel).on('change', function(ev) {
+	    elt.on('change', function(ev) {
 		sql[method](ev.target.value);
-		module.status_warn(ev.target, 'Filter has been updated; retrieve to see updated results');
+		module.status(ev.target, 'warn', 'Filter has been updated; retrieve to see updated results');
 	    });
 	} else {
-	    module.root.find(sel).on('change', function(ev) {
+	    elt.on('change', function(ev) {
 		sql[method](xform(ev.target));
-		module.status_warn(ev.target, 'Filter has been updated; retrieve to see updated results');
+		module.status(ev.target, 'warn', 'Filter has been updated; retrieve to see updated results');
 	    });
 	}
     }
@@ -87,55 +69,76 @@ var physician=(function(module) {
     // events to send changes to the sql module.
 
     module.add_filters=function(sel) {
-	sel.append(`<div class='ps-filter-section'>
-            <div class='ps-filter'>
-              Filter by specialty:<br />
-              <select class='ps-specialty' multiple=''>
-                <option value=''>All specialties</option>
-              </select>
-            </div>
-            <div class='ps-filter'>
-              Filter by name:<br />
-              <span>Last:</span><input class='ps-ln' size='32'/><br />
-              <span>First:</span><input class='ps-fn' size='32'/><br />
-              <span>Middle:</span><input class='ps-mn' size='32'/><br />
-              <span>Suffix:</span><input class='ps-sfx' size='5'/><br />
-            </div>
-            <div class='ps-filter'>
-              Filter by location:<br />
-              <span>Address:</span><input class='ps-addr' size='80'/><br />
-              <span>ZIP:</span><input class='ps-zip' size='5' maxlength='5'/><br />
-            </div>
-            <div class='ps-filter'>
-              <span>Result limit</span><input class='ps-limit' value='1000' maxlength='6'/><br/>
-              <span>Debug:</span><input class='ps-debug' name='debug' style='width: 32px;' type='checkbox' />
-            </div>
-          </div>`);
+	sel.append(`<div class='ps-filters'>
+	      <h3 class='rx-heading'>Search filters</h3>
+	      <div class='ps-filter'>
+	        <h4 class='rx-subheading'>Filter by specialty:</h4>
+	        <div><em>Tip</em>: You can select multiple specialties by pressing Ctrl- or Shift- while you click.</div>
+	        <select class='ps-specialty' multiple=''>
+	          <option value=''>All specialties</option>
+	        </select>
+	      </div>
+	      <div class='ps-filter'>
+	        <h4 class='rx-subheading'>Filter by name:</h4>
+	        <div>Letter case does not affect the search results, but only exact spelling matches are returned.</div>
+	        <span class='ps-filter-label'>Last:</span><input class='ps-ln' size='32'/><br />
+	        <span class='ps-filter-label'>First:</span><input class='ps-fn' size='32'/><br />
+	        <span class='ps-filter-label'>Middle:</span><input class='ps-mn' size='32'/><br />
+	        <span class='ps-filter-label'>Suffix:</span><input class='ps-sfx' size='5'/><br />
+	      </div>
+	      <div class='ps-filter'>
+	        <h4 class='rx-subheading'>Filter by location:</h4>
+	        <span class='ps-filter-label'>Address:</span><input class='ps-addr' size='80'/><br />
+	        <span class='ps-filter-label'>ZIP:</span><input class='ps-zip' size='5' maxlength='5'/><br />
+	      </div>
+	      <div class='ps-filter'>
+	        <h4 class='rx-subheading'>Special filters:</h4>
+	        <span class='ps-filter-label'>Result limit</span><input class='ps-limit' value='1000' maxlength='6'/><br/>
+	        <span class='ps-filter-label'>Debug:</span><input class='ps-debug' name='debug' style='width: 32px;' type='checkbox' />
+	      </div>
+	    </div>`);
 
 	console.log('Setting up filter callbacks');
-	module.sqlFilterCallback('.ps-specialty', 'providerSpecialties',
-				 function(tgt){ // resetter
-				 },
-				 function(tgt){ // getter
-				 });	
-	module.sqlFilterCallback('.ps-ln', 'lastName');
-	module.sqlFilterCallback('.ps-fn', 'firstName');
-	module.sqlFilterCallback('.ps-mn', 'middleName');
-	module.sqlFilterCallback('.ps-sfx', 'sfxName');
-	module.sqlFilterCallback('.ps-addr', 'addr');
-	module.sqlFilterCallback('.ps-limit', 'limit', 1000);
-	module.sqlFilterCallback('.ps-zip', 'zip');
+	module.sql_filter_callback(
+	    '.ps-specialty', 'providerSpecialties',
+	    function(tgt) { // resetter
+		$(tgt).find(':selected')
+		    .each(function(count, elt){
+			elt.selected=false;
+		    });
+	        $(tgt).children()[0].selected=true;
+	    },
+	    function(tgt){ // xform getter
+		var ret={};
+		$(tgt).find(':selected')
+		    .each(function(count, elt){
+			// child 0 is a dummy
+			if(elt.value != $(tgt).children()[0].value) {
+			    ret[elt.value]=1;
+			}
+		    });
+		return ret;
+	    });	
+	module.sql_filter_callback('.ps-ln', 'lastName');
+	module.sql_filter_callback('.ps-fn', 'firstName');
+	module.sql_filter_callback('.ps-mn', 'middleName');
+	module.sql_filter_callback('.ps-sfx', 'sfxName');
+	module.sql_filter_callback('.ps-addr', 'addr');
+	module.sql_filter_callback('.ps-limit', 'limit', 1000);
+	module.sql_filter_callback('.ps-zip', 'zip');
 	// update the map
 	module.root.find('.ps-zip').on('change', function(ev){
 	    if (ev.target.value) {
 		$.getJSON('http://169.53.15.199:20900/ziploc/'+`${ev.target.value}`)
 		    .done(function(latlng){
-			map.refresh({center: latlng, zoom: 15});
+			map.setZipMarker(latlng, ev.target.value);
 		    });
+	    } else {
+		map.clearZipMarker();		
 	    }
 	});
 	module.root.find('.ps-filter').on('change', function(ev){
-	    module.status_warn('filters changed since last search');
+	    module.status(ev.target, 'warn', 'filters changed since last search');
 	    module.show_debug_data();
 	});
 	//Load physician specialties list
@@ -146,12 +149,11 @@ var physician=(function(module) {
 
     
     module.add_map=function(sel) {
-	sel.append($('<div>'))
-	    .toggleClass('ps-map', true)
-	    .toggleClass('ps-filter-section', true);
+	sel.append($('<div>')
+		   .addClass('ps-map')
+		   .addClass('ps-filters'));
 	console.log('Setting up map');
-	// map.init(document.getElementsByClassName('ps-map')[0]);
-	module.update_map_bbox();
+	map.init(sel[0].getElementsByClassName('ps-map')[0]);
 	map.map.on('click', function(e){
 	    module.update_map_bbox();
 	});
@@ -164,7 +166,7 @@ var physician=(function(module) {
     module.add_results=function(sel) {
 	sel.append($(`<div class='ps-results'>
             <div class='ps-rowcount'></div>
-            <pre class='ps-error-msg ps-status-err'></pre>
+            <pre class='ps-error-msg'></pre>
             <table class='ps-table'>
               <thead class='ps-table-head'>
                 <tr>
@@ -189,7 +191,7 @@ var physician=(function(module) {
             columns: [
 		{data: 'lastName'},
 		{data: 'name'},
-		{data: 'spec'},
+		{data: 'spec', render: function(d,t,r) { return d.replace(/\|/g, ',<br />');} },
 		{data: 'addr'},
 		{data: 'city'},
 		{data: 'state'},
@@ -198,35 +200,56 @@ var physician=(function(module) {
 
 		  }
     
-    module.init = function(sel) {
+    module.init=function(sel) {
 	module.root=sel;
 	sel.empty();
-	module.add_controls(sel);
-	module.add_filters(sel);
-	sel.append($('<hr />'));
-	module.add_map(sel);
-	sel.append($('<hr />'));
-	module.add_results(sel);
+	// left column for controls
+	var col=$('<div>')
+	    .addClass('rx-column')
+	    .css('width', '35%');
+	sel.append(col);
+	module.add_controls(col);
+	module.add_filters(col);
 
-	// Kick off some final steps
-	module.show_debug_data();
-	
+ 	// right column for results
+	col=$('<div>')
+	    .addClass('rx-column')
+	    .css({width: '65%',
+		  'border-left': 'thin solid #CCCCCC',
+		  padding: '1%'});
+	col.append($('<h3>')
+		   .addClass('rx-heading')
+		   .text('Search Results'));
+	col.append($('<div>')
+		   .html(`After searching, use this table to navigate the results.<br />
+			 The search box on the right lets you filter the results based on their contents.<br />
+			 Click on any row to examine payment/prescription details.`));
+	sel.append(col);
+	module.add_results(col);
+
+ 	// and the map underneath
+	sel.append($('<h4>')
+		   .addClass('rx-subheading')
+		   .text('Filtering map'));
+	sel.append($('<div>').html('Zooming and panning in this map limits the search to the shown region.<br />\n<em>Tip</em>: Shift-and-drag lets you quickly zoom in on a rectangular area.'));
+	module.add_map(sel);
+
 	console.log('Ready!!');
 	return module;
     }
 
     // show the progress wheel icon
-    module.progress_start = function() {
+    module.progress_start=function() {
 	module.root.find('.ps-progress')
 	    .css('display', 'inline');
     }
     // clear the progress wheel icon
-    module.progress_stop = function() {
+    module.progress_stop=function() {
 	module.root.find('.ps-progress')
 	    .css('display', 'none');
     }
     
-    module.show_debug_data = function() {
+    module.show_debug_data=function() {
 	if(module.root.find('.ps-debug')[0].checked) {
 	    module.root.find('.ps-sql-where').text(
 		`Filter string: [${sql._makeQuery()}]`
@@ -242,49 +265,54 @@ var physician=(function(module) {
     }
     // Remove visual indications of pending work
     module.reset_controls=function() {
-	module.status_none(module.root);
+	module.status_clear_all();
 	module.progress_stop();
     }
     // Re-initialize the values of filter fields
     module.reset_filters=function() {
-	Object.keys(module._sqlFilterInputs).forEach(function(k) {
-	    if(!$.isFunction(module._sqlFilterInputs[key])) {
-		key.value=module._sqlFilterInputs[key];
-	    } else {
-		module._sqlFilterInputs[key](key);
+	Object.keys(module._sql_filter_resetters).forEach(function(sel){
+	    var resetter=module._sql_filter_resetters[sel];
+	    if(resetter!==undefined) {
+		var elt=$(sel);
+		if(!$.isFunction(resetter)) {
+		    elt[0].value=resetter;
+		} else {
+		    resetter(elt[0]);
+		}
 	    }
 	});
     }
  
-    module.reset = function() {
+    module.reset=function() {
 	module.reset_controls();
 	module.reset_filters();
-	module.reset_map();
 	module.reset_debug_data();
 	module.reset_results_table();
+	map.reset();
 	sql.reset_filters();
 	map.reset();
 	sql.limit(module.root.find('.ps-limit')[0].value);
     }
 
-    module.formatProviderMsg = function(row) {
-	var msg=`${row.lastName}, ${row.name}`;
-	if(row.spec && row.spec.length > 0) {
-	    msg += `<br />\n${row.spec}`;
-	}
-	msg += `<br />\n${row.addr}`
-	msg += `<br />\n${row.city}, ${row.state}, ${row.zip}`
-	var loc;
-	if(row.latLng) {
-	    loc=row.latLng;
-	} else if(row.zipLatLng) {
-	    loc=row.zipLatLng;
-	    msg+='<br />\napprox. location (ZIP code)'
-	}
-	return msg;    
+    module.make_physician_marker_msg=function(row) {
+	var msg=`<div class='ps-map-marker'>
+            ${row.lastName}, ${row.name}<br />
+            ${row.spec && row.spec + '<br />' || ''}
+            ${row.addr}<br />
+            ${row.city}, ${row.state}, ${row.zip}<br />`;
+        if(!row.latLng) {
+           if(row.zipLatLng) {
+        	   msg+='approx. location (ZIP code)</br>';
+           } else {
+        	   msg+='no lat/lon geolocation</br>';
+           }
+        }
+        msg+=`<input type='button' name='Show payment/rx details' onclick='physician._marker_cb && physician._marker_cb()' />
+            </div>`;
+	return msg;
     }
 
-    module.reset_results_table = function() {
+    module.reset_results_table=function() {
 	var tbl=module.root.find('.ps-table');
 	tbl.find('tbody').empty();
 	var api=tbl.dataTable().api();
@@ -292,13 +320,13 @@ var physician=(function(module) {
 	api.draw();
 	return api;
     }
-    module.on_results_table_row_click = function(cb) {
+    module.on_results_table_row_click=function(cb) {
 	module.root.find('.ps-table').find('tbody').on('click', 'tr', function () {
 	    cb(module.root.find('.ps-table').dataTable().api().row( this ).data());
 	});
     }			    
     
-    module.update_providers = function() {
+    module.update_providers=function() {
 	module.show_debug_data();
 	module.root.find('.ps-rowcount').text('');
 	var tbl=module.reset_results_table();
@@ -306,37 +334,43 @@ var physician=(function(module) {
 	module.progress_start();
 	sql.findProviders().node({
 	    'data.*':function(row) {
-		var msg=module.formatProviderMsg(row);
 		tbl.row.add(row);
-		try {
-		    map.addMarker(JSON.parse(loc), row.physId, msg);
-		} catch(e) {
-		    module.root.find('.ps-error-msg').append('<div>').innerHtml(`${row.physid}: ${e.toString()}<br />\n${msg}`)
-		}
+		var msg=module.make_physician_marker_msg(row);
+		console.log('Adding marker at', loc, msg);
+		map.addMarker(JSON.parse(loc), msg);
+		console.log('Added marker');
 	    },
 	    'data': function(data) {
 		if(data) {
 		    module.root.find('.ps-rowcount').text(`Found ${data.length} matching physicians`);		    
 		}
-		module.status_ok('output is current; no errors');
+		module.status_clear_all();
 	    }, 
 	    'err': function(err){
 		if(err && err.length>0) {
 		    module.root.find('.ps-error-msg').text(err);
-		    module.status_err();
 		}
 	    }
 	}).done(function(){
 	    module.progress_stop();
-	    module.status_none($('ps-status-warn'));
+	    module.status_clear_all();
 	    tbl.draw();
+	    $('.ps-table tr.odd').css('background-color','#EEEEEE'); // hack to force alt. color
 	});
 	return module;
     }
-    module.update_map_bbox = function() {
+    module.update_map_bbox=function() {
 	sql.boundingBox(map.map.getBounds());
 	return module;
     }    
 
+    module.marker_cb=function(_) {
+        if(arguments.length>0) {
+            module._marker_cb=_;
+            return module;
+        }
+        return module._marker_cb;
+    }
+    
     return module;
 }(physician||{}))

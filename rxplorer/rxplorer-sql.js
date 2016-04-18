@@ -56,6 +56,7 @@ var sql=(function(module){
 	var where={'PhysicianProfileZip5=Zip5': 1};
 	var bb=module.boundingBox()
 	if(bb) {
+	    console.log("Using bbox:", module._bbstring(bb));
 	    where[`ST_WITHIN(Coords, ST_GeomFromText("${module._bbstring(bb)}"))`]=1;
 	}
 	var spc=module.providerSpecialties();

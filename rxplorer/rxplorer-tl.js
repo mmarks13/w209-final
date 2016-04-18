@@ -24,13 +24,14 @@ var tableLens=(function(module) {
 	barCount:  15,
 	barColor: "#62b5d1"
     };
-    module.Chart = function(sel, chart_opts) {
+    module.Chart = function(sel_str, chart_opts) {
+	var sel=d3.select(sel_str);
 	// user-provided options take precedence, so our computed width can be overridden if desired.
 	var chart=module.merge_opts({
    	        svg: sel.append('svg'),
 	        xScale: d3.scale.linear(),
 	        yScale: d3.scale.linear(),
-  	        width: sel.node().getBoundingClientRect().width,
+                width: sel.node().getBoundingClientRect().width,
 	        quant_pfx: '',
 	        data: []
 	    },
@@ -58,25 +59,33 @@ var tableLens=(function(module) {
 		return b[chart.quant_fld]-a[chart.quant_fld]
 	    });
 	    // add bars
+	    console.log("adding bar:", row);
 	    var bars=chart.svg
 		.selectAll('g')
 		.data(chart.data)
-		.enter();
+		.enter()
+		.append(g);
 	    bars.append('rect')
 		.attr("y", function(d, i) {
+		    console.log(`placing item at y=${chart.yScale(i)}`)
 		    return chart.yScale(i);
 		})
 		.attr("x", chart.barXStart)
 		.attr("height", chart.barHeight)
 		.attr("fill", d3.rgb(chart.barColor))
 		.attr("width", function(d, i) {
+		    console.log(`placing item at x=${chart.xScale(d[chart.quant_fld])}`)
 		    return chart.xScale(d[chart.quant_fld]);
 		});
 	    // add rx labels
 	    bars.append('text')
-		.text(function(d) {return d[chart.label_fld]})
+		.text(function(d) {
+		    console.log(`rx label: ${d[chart.label_fld]}`)
+		    return d[chart.label_fld];
+		})
 	    	.attr("x", chart.barXStart-1)
 		.attr("y", function(d, i) {
+		    console.log(`rx label at (${chart.barXStart-1},${chart.yScale(i)+6})`)
 		    return chart.yScale(i)+6;
 		})
 		.attr("text-anchor","end")
@@ -92,34 +101,33 @@ var tableLens=(function(module) {
 		.attr("y", function(d, i) {
 		    return yScale(i)+6;
 		})
-		.attr("text-anchor","end")
+		.attr("text-anchor","start")
 		.attr('class', 'tl-quantlabel');
 	    return chart;
 	}
 	return chart;
     }
     
-    module.init=function(physName, physId, userOpts) {
-	var opts=module.merge_opts();
-	//TODO: rename var to PmntTot
-	module.chart1=new module.Chart(d3.selectAll("#tl-chart1"),
+    module.init=function(selector_str, physician, opts) {
+	var selector=d3.select(selector);
+	module.chart1=new module.Chart(selector.selectAll(".tl-payments .tl-chart"),
 				       module.merge_opts({
-					   'quant_fld': 'PmntCnt',
+					   'quant_fld': 'PmntTot',
 					   'label_fld': 'Rx',
 					   'quant_pfx': '$'
   				         },
 					 module._defaults,
-					 userOpts));
-	module.chart2=new module.Chart(d3.selectAll("#tl-chart2"),
+					 opts));
+	module.chart2=new module.Chart(selector.selectAll(".tl-rxcount .tl-chart"),
 				       module.merge_opts({
 					   'quant_fld': 'RxCnt',
 					   'label_fld': 'Rx',
   				         },
 					 module._defaults,
-					 userOpts));
+					 opts));
 
 	//load data for main table and create the two charts.
-	oboe("http://169.53.15.199:20900/mainTable/"+physId+"?real")
+	oboe("http://169.53.15.199:20900/mainTable/"+physician.physId+"?real")
 	    .node({
 		'data.*': function(row){
 		    module.chart1.add(row);
@@ -388,12 +396,12 @@ var tableLens=(function(module) {
 //
 //
 //    //define separate svg for the strip plots           
-//    var svg_strip1 = d3.select("#tl-strip1")
+//    var svg_strip1 = selector.select("#tl-strip1")
 //	.append("svg")
 //	.attr("width",w)
 //	.attr("height",strip_plot_height);
 //
-//    var svg_strip2 = d3.select("#tl-strip2")
+//    var svg_strip2 = selector.select("#tl-strip2")
 //	.append("svg")
 //	.attr("width",w)
 //	.attr("height",strip_plot_height);

@@ -1,28 +1,28 @@
-<?xml version="1.0" encoding="utf-8"?>
-<html xmlns="http:///www.w3.org/1999/xhtml">
+<?xml version='1.0' encoding='utf-8'?>
+<html xmlns='http:///www.w3.org/1999/xhtml'>
   <head>
-    <title>Physician RxPlorer</title>
-    <meta charset="utf-8"/>
-    <meta name="viewport" content="width=device-width, height=device-height, initial-scale=1"/>
-    <link rel="stylesheet" href="/css/leaflet.css" />
-    <link rel="stylesheet" href="/css/jquery.dataTables.min.css"/>
-    <link rel="stylesheet" href="rxplorer-physician.css"/>
-    <script src="/js/jquery-2.2.3.min.js"></script>
-    <script src="/js/d3.min.js"></script>
-    <script src="/js/leaflet.js"></script>
-    <script src="/js/jquery.dataTables.min.js"></script>
-    <script src="/js/oboe-browser.min.js"></script>
-    <script src="rxplorer-sql.js"></script>
-    <script src="rxplorer-map.js"></script>
-    <script src="rxplorer-specialties.js"></script>
-    <script src="rxplorer-physician.js"></script>
-    <script src="rxplorer-tl.js"></script>
+    <title>Physician ℞Plorer</title>
+    <meta charset='utf-8'/>
+    <meta name='viewport' content='width=device-width, height=device-height, initial-scale=1'/>
+    <link rel='stylesheet' href='/css/leaflet.css' />
+    <link rel='stylesheet' href='/css/jquery.dataTables.min.css'/>
+    <link rel='stylesheet' href='rxplorer-physician.css'/>
+    <script src='/js/jquery-2.2.3.min.js'></script>
+    <script src='/js/d3.min.js'></script>
+    <script src='/js/leaflet.js'></script>
+    <script src='/js/jquery.dataTables.min.js'></script>
+    <script src='/js/oboe-browser.min.js'></script>
+    <script src='rxplorer-sql.js'></script>
+    <script src='rxplorer-map.js'></script>
+    <script src='rxplorer-specialties.js'></script>
+    <script src='rxplorer-physician.js'></script>
+    <script src='rxplorer-tl.js'></script>
     <style>
       * { vertical-align:top; }
 
       /* inline-block diplay + a bit under half width to make these into 2 columns */
-      #rx-physician-selector #rx-table-lens{
-          width: 48%;
+      .rx-column {
+          max-width: 48%;
           display: inline-block;
       }
 
@@ -40,16 +40,19 @@
           padding-bottom: 1em;
       }
       h3,.rx-heading {
-	  font-weight: medium;
+	  font-weight: 500;
           font-size: large;
-          padding-bottom: 1ex;
       }      
       h3,.rx-subheading {
-	  font-weight: medium;
+	  font-weight: 500;
           font-size: medium;
           font-style: oblique;
-          padding-bottom: 1ex;
-      }      
+      }
+      .rx-hidden {
+          display: none;
+          visibility: hidden;
+      }
+	  
     </style>
   </head>
   <body>
@@ -64,17 +67,32 @@
          have two containers on the same page with independent
          instances. -->
     
-	 Javascript modules fill in their contents
-    <h1 class="rx-title">Physician R<sub>x</sub>Plorer</h1>
-    <h2 class="rx-subtitle">Visualizing the relationship between pharmaceutical company payments and drug prescriptions</h2>
+    <h1 class='rx-title'>Physician <!--R<sub>x</sub>-->℞Plorer</h1>
+    <h2 class='rx-subtitle'>Visualizing the relationship between pharmaceutical company payments and drug prescriptions</h2>
     <div>
-      <div id="rx-physician-selector"> </div>
-      <div id="rx-table-lens"> </div>
+      <div id='rx-physician-selector'> </div>
+      <div id='rx-table-lens' >
+	<input id='rx-select-again' type='button' value='Return to selector' style='width:auto;'/>
+      </div>
     </div>
     <script>
+      function activate_table_lens(physician) {
+          console.log('Creating table lens for', physician);
+	  tableLens.init('#rx-table-lens', physician);
+          $('#rx-physician-selector').addClass('rx-hidden');
+          $('#rx-table-lens').removeClass('rx-hidden');
+      }
+      function activate_physician_selector() {
+          $('#rx-physician-selector').removeClass('rx-hidden');
+          $('#rx-table-lens').addClass('rx-hidden').empty();
+      }
       $(document).ready(function(){
           physician.init($('#rx-physician-selector'));
-          physician.on_results_table_row_click(d3.select('#rx-table-lens'));
+          physician.on_results_table_row_click(activate_table_lens);
+	  physician.marker_cb(function(ev) {
+  	      activate_table_lens($(ev.target).data().psData);
+	  });
+	  $('#rx-select-again').on('click', activate_physician_selector);
       });
     </script>
   </body>
