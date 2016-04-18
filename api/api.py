@@ -138,9 +138,7 @@ def histogram(column, drug = None):
     if 'fake' in request.values:
         count=np.random.randint(0,10000,1000).tolist()
         return Response(
-            json.dumps({'data': [ {'count': x} for x in count ],
-                 'err': ''
-            }),
+            json.dumps({'keys':['Count'], 'data': [ [x] for x in count ], 'err': ''}),
             status='200 OK');
     if drug:
         where="""WHERE NameOfAssociatedCoveredDrugOrBiological1='{drug}'""".format(drug=drug)
