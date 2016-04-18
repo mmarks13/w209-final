@@ -1,4 +1,41 @@
 var physician=(function(module) {
+    module.init=function(sel) {
+	module.root=sel;
+	sel.empty();
+	// left column for controls
+	var col=$('<div>')
+	    .addClass('rx-column')
+	    .css('width', '35%');
+	sel.append(col);
+	module.add_controls(col);
+	module.add_filters(col);
+
+ 	// right column for results
+	col=$('<div>')
+	    .addClass('rx-column')
+	    .css({width: '65%',
+		  'border-left': 'thin solid #CCCCCC',
+		  padding: '1%'});
+	col.append($('<h3>')
+		   .addClass('rx-heading')
+		   .text('Search Results'));
+	col.append($('<div>')
+		   .html(`After searching, use this table to navigate the results.<br />
+			 The search box on the right lets you filter the results based on their contents.<br />
+			 Click on any row to examine payment/prescription details.`));
+	sel.append(col);
+	module.add_results(col);
+
+ 	// and the map underneath
+	sel.append($('<h4>')
+		   .addClass('rx-subheading')
+		   .text('Filtering map'));
+	sel.append($('<div>').html('Zooming and panning in this map limits the search to the shown region.<br />\n<em>Tip</em>: Shift-and-drag lets you quickly zoom in on a rectangular area.'));
+	module.add_map(sel);
+
+	console.log('Ready!!');
+	return module;
+    }
     // Append submit/reset/progress and up-to-date indicators under the provided selector,
     // and plug in events to respond to them.
     module.add_controls=function(sel) {
@@ -23,7 +60,7 @@ var physician=(function(module) {
     }
 
     // Status indicator controls routines
-    // helper to set the status CSS classes
+    // helpers to set and clear the status CSS classes
     module.status=function(sel, type, msg) {
 	module.status_clear(sel);
 	return $(sel)
@@ -55,19 +92,22 @@ var physician=(function(module) {
 	if(!xform) {
 	    elt.on('change', function(ev) {
 		sql[method](ev.target.value);
-		module.status(ev.target, 'warn', 'Filter has been updated; retrieve to see updated results');
+		module.status(
+		    ev.target, 'warn',
+		    'Filter has been updated; retrieve to see updated results');
 	    });
 	} else {
 	    elt.on('change', function(ev) {
 		sql[method](xform(ev.target));
-		module.status(ev.target, 'warn', 'Filter has been updated; retrieve to see updated results');
+		module.status(
+		    ev.target, 'warn',
+		    'Filter has been updated; retrieve to see updated results');
 	    });
 	}
     }
        
     // Append filter inputs under the provided selector, and plug in
     // events to send changes to the sql module.
-
     module.add_filters=function(sel) {
 	sel.append(`<div class='ps-filters'>
 	      <h3 class='rx-heading'>Search filters</h3>
@@ -162,7 +202,24 @@ var physician=(function(module) {
 	map.map.on('zoomend', module.update_map_bbox);
 	map.map.on('viewreset', module.update_map_bbox);
     };
-    
+    module.update_map_bbox=function() {
+	sql.boundingBox(map.map.getBounds());
+	return module;
+    }
+    module.marker_cb=function(_) {
+        if(arguments.length>0) {
+            module._marker_cb=_;
+            return module;
+        }
+        return module._marker_cb;
+    }
+    module.on_results_table_row_click=function(cb) {
+	module.root.find('.ps-table').find('tbody').on('click', 'tr', function () {
+	    cb(module.root.find('.ps-table').dataTable().api().row( this ).data());
+	});
+    }			    
+
+        
     module.add_results=function(sel) {
 	sel.append($(`<div class='ps-results'>
             <div class='ps-rowcount'></div>
@@ -198,46 +255,8 @@ var physician=(function(module) {
 		{data: 'zip'}
            ]});
 
-		  }
-    
-    module.init=function(sel) {
-	module.root=sel;
-	sel.empty();
-	// left column for controls
-	var col=$('<div>')
-	    .addClass('rx-column')
-	    .css('width', '35%');
-	sel.append(col);
-	module.add_controls(col);
-	module.add_filters(col);
-
- 	// right column for results
-	col=$('<div>')
-	    .addClass('rx-column')
-	    .css({width: '65%',
-		  'border-left': 'thin solid #CCCCCC',
-		  padding: '1%'});
-	col.append($('<h3>')
-		   .addClass('rx-heading')
-		   .text('Search Results'));
-	col.append($('<div>')
-		   .html(`After searching, use this table to navigate the results.<br />
-			 The search box on the right lets you filter the results based on their contents.<br />
-			 Click on any row to examine payment/prescription details.`));
-	sel.append(col);
-	module.add_results(col);
-
- 	// and the map underneath
-	sel.append($('<h4>')
-		   .addClass('rx-subheading')
-		   .text('Filtering map'));
-	sel.append($('<div>').html('Zooming and panning in this map limits the search to the shown region.<br />\n<em>Tip</em>: Shift-and-drag lets you quickly zoom in on a rectangular area.'));
-	module.add_map(sel);
-
-	console.log('Ready!!');
-	return module;
     }
-
+    
     // show the progress wheel icon
     module.progress_start=function() {
 	module.root.find('.ps-progress')
@@ -320,12 +339,10 @@ var physician=(function(module) {
 	api.draw();
 	return api;
     }
-    module.on_results_table_row_click=function(cb) {
-	module.root.find('.ps-table').find('tbody').on('click', 'tr', function () {
-	    cb(module.root.find('.ps-table').dataTable().api().row( this ).data());
-	});
-    }			    
+
     
+    // Update the results set by getting data from the api, and
+    // putting rows into the table and in markers on the map
     module.update_providers=function() {
 	module.show_debug_data();
 	module.root.find('.ps-rowcount').text('');
@@ -358,18 +375,6 @@ var physician=(function(module) {
 	    $('.ps-table tr.odd').css('background-color','#EEEEEE'); // hack to force alt. color
 	});
 	return module;
-    }
-    module.update_map_bbox=function() {
-	sql.boundingBox(map.map.getBounds());
-	return module;
-    }    
-
-    module.marker_cb=function(_) {
-        if(arguments.length>0) {
-            module._marker_cb=_;
-            return module;
-        }
-        return module._marker_cb;
     }
     
     return module;

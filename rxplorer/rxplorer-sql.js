@@ -1,17 +1,20 @@
-var sql=(function(module){
-    module.endpoint = 'http://169.53.15.199:20900/sql';
-    module.query = function(query, callbacks) {
-	return oboe({url: module.endpoint+'?query='+encodeURIComponent(query),
-		     cached: true});
-    }
+/* Module to wrap rxplorer's sql interatcion.
+ This has copies of various bits of state like the filtersm=. (why did I do that again?)
 
+TODO: pass in filters as arguments instead of using attributes, and remove reset if no state is left
+*/
+
+var sql=(function(module){
+    // var to hold attribute resetters
     module._resetData={}
+    // fn to reset attributes by calling their resetters
     module.reset_filters = function() {
 	Object.keys(module._resetData).forEach(function(attr) {
 	    module[attr]=module._resetData[attr];
 	});
     }
-    
+    // factory to make attributes (var/getter/setter) given their name
+    // and a default val/resetter
     function makeAttribute(module, attrName, defaultVal, subAccessor) {
         var _attrName='_'+attrName;
         module[_attrName]=defaultVal||null;
@@ -35,28 +38,37 @@ var sql=(function(module){
         }
     }
 
+    // This is an object whose keys are specialties (i.e., unique values).  Its getter extracts the keys.
     makeAttribute(module, 'providerSpecialties', {}, Object.keys)
+    // Leaflet geographic bounding box
     makeAttribute(module, 'boundingBox');
     makeAttribute(module, 'firstName');
     makeAttribute(module, 'middleName');
     makeAttribute(module, 'lastName');
+    // affixes/qualifiers
     makeAttribute(module, 'sfxName');
+    // street address
     makeAttribute(module, 'addr');
+    // 5-digit zip
     makeAttribute(module, 'zip');
+    // query result limit
     makeAttribute(module, 'limit');
     
+    // helper to turn leaflet L.LatLng to Mariadb 'Lon Lat' string
     module._llstring = function(ll) {
 	return `${ll.lng} ${ll.lat}`;
     }
+    // helper to turn leaflet L.BoundingBox to a WKT polygon string
     module._bbstring = function(bb) {
 	return `POLYGON ((${module._llstring(bb.getNorthEast())}, ${module._llstring(bb.getNorthWest())}, ${module._llstring(bb.getSouthEast())}, ${module._llstring(bb.getSouthWest())}, ${module._llstring(bb.getNorthEast())}))`;
     }
     
+    // helper to make a WHERE clause string from the filters set
+    // Mariadb is case insensitive by default, so this isn't littered with LCASEs
     module._makeWhere = function() {
 	var where={'PhysicianProfileZip5=Zip5': 1};
 	var bb=module.boundingBox()
 	if(bb) {
-	    console.log("Using bbox:", module._bbstring(bb));
 	    where[`ST_WITHIN(Coords, ST_GeomFromText("${module._bbstring(bb)}"))`]=1;
 	}
 	var spc=module.providerSpecialties();
@@ -100,6 +112,7 @@ var sql=(function(module){
 	}
 	return '';
     }
+    // Helper to construct the RxPlorer physician query
     module._makeQuery = function() {
 	var query=`SELECT
 	PhysicianProfileID         AS physId,
@@ -131,6 +144,19 @@ var sql=(function(module){
 	}
 	return query+';';
     }
+
+    // low priv query endpoint to the UI.
+    // TODO: Once the queries settle down, move them in to more restricted
+    // explicit endpoints
+    module._endpoint = 'http://169.53.15.199:20900/sql';
+
+    // This calls the query api and returns the resulting oboe object
+    // for the user to await data
+    module.query = function(query) {
+	return oboe({url: module._endpoint+'?query='+encodeURIComponent(query),
+		     cached: true});
+    }
+    // Main API to retrieve providers
     module.findProviders = function() {
 	return module.query(module._makeQuery());
     }
