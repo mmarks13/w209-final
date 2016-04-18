@@ -21,8 +21,8 @@
       * { vertical-align:top; }
 
       /* inline-block diplay + a bit under half width to make these into 2 columns */
-      #rx-physician-selector #rx-table-lens{
-          width: 48%;
+      .rx-column {
+          max-width: 48%;
           display: inline-block;
       }
 
@@ -40,16 +40,20 @@
           padding-bottom: 1em;
       }
       h3,.rx-heading {
-	  font-weight: medium;
+	  font-weight: 500;
           font-size: large;
           padding-bottom: 1ex;
       }      
       h3,.rx-subheading {
-	  font-weight: medium;
+	  font-weight: 500;
           font-size: medium;
           font-style: oblique;
           padding-bottom: 1ex;
-      }      
+      }
+      rx-hidden {
+          visibility: hidden;
+      }
+	  
     </style>
   </head>
   <body>
@@ -64,17 +68,18 @@
          have two containers on the same page with independent
          instances. -->
     
-	 Javascript modules fill in their contents
     <h1 class="rx-title">Physician R<sub>x</sub>Plorer</h1>
     <h2 class="rx-subtitle">Visualizing the relationship between pharmaceutical company payments and drug prescriptions</h2>
     <div>
       <div id="rx-physician-selector"> </div>
-      <div id="rx-table-lens"> </div>
+      <div id="rx-table-lens" class='rx-hidden'> </div>
     </div>
     <script>
       $(document).ready(function(){
           physician.init($('#rx-physician-selector'));
-          physician.on_results_table_row_click(d3.select('#rx-table-lens'));
+          physician.on_results_table_row_click(function(x) {
+	     tableLens.init(d3.select('#rx-table-lens'), x);
+	  });
       });
     </script>
   </body>

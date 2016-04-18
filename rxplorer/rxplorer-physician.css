@@ -1,48 +1,47 @@
-.ps-entry-section {
+.ps-entries {
     display: block;
     padding-top: 1em;
 }
 
 .ps-entry {
-    display: inline-block;
-    width: 30%;
-    padding-right: 3%
+    display: block;
+    width: 49%;
 }
 
-.ps-filter-section {
+.ps-progress-spinner {
+    display: none;
+    height: 32;
+    width: 32;
+}
+
+.ps-filters {
+    padding-top: 1em;
     display: block;
 }
 .ps-filter {
     display: inline-block;
 }
 
-.ps-filter span {
-    width 15%;
+.ps-filter {
+    display: inline-block;
+    width: 49%;
 }
-.ps-filter select {
-    width: 85%;
-}
-
-.ps-filter input {
-    width: 90%;
+.ps-filter select,input {
+    display: inline-block;
+    width: 75%;
 }
 
-.ps-status-ok {
-    background-color: #AAFFAA;
-    fill: #AAFFAA;
-}
 .ps-status-warn {
     background-color: #FFFAAA;
     fill: #FFFFAA;
 }
-.ps-status-err {
+.ps-status-err, .ps-error-msg {
     background-color: #FFAAAA;
     fill: #FFAAAA;
 }
 
 .ps-map {
     display: block;
-    height: 60%
 }
 .ps-results {
     display: block;
