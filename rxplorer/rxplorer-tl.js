@@ -24,7 +24,8 @@ var tableLens=(function(module) {
 	barCount:  15,
 	barColor: "#62b5d1"
     };
-    module.Chart = function(sel, chart_opts) {
+    module.Chart = function(sel_str, chart_opts) {
+	var sel=d3.select(sel_str);
 	// user-provided options take precedence, so our computed width can be overridden if desired.
 	var chart=module.merge_opts({
    	        svg: sel.append('svg'),

@@ -42,18 +42,18 @@ var map=(function(module){
 	return module;
     }
     
-    module._markers=[]
-    module.addMarker = function(loc, relItem, msg) {
-	var marker=new module.Marker(loc, {related: relItem});
-	module._markers.push(marker);
+    module.addMarker = function(loc, msg, data) {
+	var marker=L.marker(loc);
+	$(marker).data('psData', data);
 	return marker
-	    .addTo(module.map)
+	    .addTo(module._markers)
 	    .bindPopup(msg);
     }
     module.clearMarkers = function() {
-	module._markers.forEach(function(mrk) {
-	    module.map.removeLayer(mrk);
-	});
+	if(module._markers) {
+	    module.map.removeLayer(module._markers);
+	}
+	module._markers=L.layerGroup();
 	return module;
     }
     return module;
