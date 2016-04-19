@@ -77,10 +77,11 @@ div.tooltip {
     
     <!--add the divs for the two charts for the table lens and include a title for the plots-->
     <div class="container_chart1" id="chart1">
-    	<h4 align="center">Money/Value of Goods Received from Pharmacuetical Companies</h4>
+    	<h4 align="center">Value of Goods/Money Received from Pharmacuetical Companies Concerning Their Products </h4>
 	</div>
 	<div class="container_chart2" id="chart2">
 		<h4 align="center">Medicare Prescriptions Written - 2013</h4>
+		<br/>
 	</div>    
         <script type="text/javascript">	
         	//variables for doctor name and physician ID
@@ -149,6 +150,7 @@ div.tooltip {
 				   //add on mouseover pop up functionality
 				   .on("mouseover", function(d) {	
 				   	bar_Value = d[2] //since we are using d again, we need to convert the orginal d to a new variable 
+				   	console.log(d)
 
 				   	//get coordinates of the mouse to place tooltip next to cursor
 				   	var x_cord = d3.event.pageX;
@@ -177,14 +179,13 @@ div.tooltip {
 			            div.transition()		
 			                .duration(200)		
 			                .style("opacity", .9)
-						console.log(jsn_HoverData)
 			            var Drug_Name = Matching_Array_Slice[0][0]
 
 			            div.html("Drug: "+ Drug_Name + "<br/><font size=\"1\">Nature of Payments</font><br/>")	
 			            	.style("left", (x_cord) + "px")		
 			                .style("top", (y_cord-40) + "px")
 					
-					    Bar_x_Scale_Start = 60
+					    Bar_x_Scale_Start = 70
 
 						var xScale_hover = d3.scale.linear()
 							.domain([0,d3.max(Matching_Array_Slice,function(d){return d[2];})])
@@ -234,7 +235,7 @@ div.tooltip {
 						    .data(Matching_Array_Slice)
 							.enter()
 							.append("text")
-							.text(function(d) {return "$"+d[2]})
+							.text(function(d) {return "$"+Math.round(d[2],2)})
 							.attr("x", function(d) {
 						   		return xScale_hover(d[2])+Bar_x_Scale_Start+2;
 						   	})
@@ -245,14 +246,32 @@ div.tooltip {
 							.attr("font-size", "8px")
 							.attr("fill","black");			                	
 		            })	
+					d3.select("#strip1").selectAll("svg").transition("Strip1 Selected Drug")
+		            d3.select("#strip2").selectAll("svg").transition("Strip2 Selected Drug")	
+
+				   	d3.select("#strip1").selectAll("svg").remove()
+				   	d3.select("#strip2").selectAll("svg").remove()
+					
+					Create_Strip_Plot('AmountOfPaymentUSDollarsAgg', d[1] ,bar_Value , 'Test Name')
+				   	Create_Strip_Plot('TotalClaimCountAgg', d[0] ,bar_Value,'Test Name');
 					})
 
 					
 		        	.on("mouseout", function(d) {		
-		            div.transition()
+		            div.transition("remove tooltip")
 		              	.style("opacity", 0)
+		              	//the strip plot transitions are causing all sorts of problems. 
+		      //       d3.select("#strip1").selectAll("svg").transition("Strip1 All Drugs")
+		      //       	.delay(500)
+		      //       d3.select("#strip2").selectAll("svg").transition("Strip2 All Drugs")	
+				   	// 	.delay(500)
 
 		            div.selectAll("svg").remove();	//remove the created svg's in the tooltop
+		      //       d3.select("#strip1").selectAll("svg").remove()
+				   	// d3.select("#strip2").selectAll("svg").remove()
+
+				 //   	Create_Strip_Plot('TotalClaimCountAgg', d[0] ,'','Test Name')
+					// Create_Strip_Plot('AmountOfPaymentUSDollarsAgg', d[1] ,'' , 'Test Name');
 		        	});
 				
 				var xScale_chart2 = d3.scale.linear()
@@ -273,7 +292,31 @@ div.tooltip {
 				   .attr("width", function(d) {
 				   		return xScale_chart2(d[0]);
 				   })
-				   .attr("fill", d3.rgb(barColor));
+				   .attr("fill", d3.rgb(barColor))
+				   .on("mouseover", function(d){
+				   	d3.select("#strip1").selectAll("svg").transition("Strip1 Selected Drug")
+		            d3.select("#strip2").selectAll("svg").transition("Strip2 Selected Drug")	
+				   	bar_Value = d[2] //since we are using d again, we need to convert the orginal d to a new variable 
+
+				   	d3.select("#strip1").selectAll("svg").remove()
+				   	d3.select("#strip2").selectAll("svg").remove()
+
+					Create_Strip_Plot('AmountOfPaymentUSDollarsAgg', d[1] ,bar_Value , 'Test Name')
+				   	Create_Strip_Plot('TotalClaimCountAgg', d[0] ,bar_Value,'Test Name');
+					})
+				   .on("mouseleave", function(d){
+				   	//this is causing all sorts of problems. Comment out for now. 
+				 //   	d3.select("#strip1").selectAll("svg").transition("Strip1 All Drugs")
+		   //          	.delay(1000)
+		   //          d3.select("#strip2").selectAll("svg").transition("Strip2 All Drugs")	
+				 //   		.delay(1000)
+				 //   	d3.select("#strip1").selectAll("svg").remove()
+				 //   	d3.select("#strip2").selectAll("svg").remove()
+
+				 //   	Create_Strip_Plot('TotalClaimCountAgg', d[0] ,'','Test Name')
+					// Create_Strip_Plot('AmountOfPaymentUSDollarsAgg', d[1] ,'' , 'Test Name');
+				   });
+
 
 
 				//Add Labels chart 1
@@ -346,26 +389,54 @@ div.tooltip {
 
 				Create_Strip_Plot('TotalClaimCountAgg', Total_RxCount ,'','Test Name')
 				Create_Strip_Plot('AmountOfPaymentUSDollarsAgg', Total_PmntTot ,'' , 'Test Name')
+
+				svg_chart1.selectAll("text1")
+					.data([d3.max(Main_dataset,function(d){return d[1];})])
+					.enter()
+					.append("text")
+					.text("Hover cursor on bars for drug specific info")
+					.attr("x", function(d){ return (xScale(d))/2 +Main_bar_x_Scale_Start;})
+					.attr("y", function(d, i) {
+							   		return yScale(i)+barHeight/2+4;
+							   	})
+					.attr("font-family","sans-serif")
+					.attr("font-size", "8px")
+					.attr("fill","#E3E3E3")
+					.attr("text-anchor", "middle");
+
+				svg_chart2.selectAll("text1")
+					.data([d3.max(Main_dataset,function(d){return d[1];})])
+					.enter()
+					.append("text")
+					.text("Hover cursor on bars for drug specific info")
+					.attr("x", function(d){ return (xScale(d))/2 +Main_bar_x_Scale_Start;})
+					.attr("y", function(d, i) {
+							   		return yScale(i)+barHeight/2+4;
+							   	})
+					.attr("font-family","sans-serif")
+					.attr("font-size", "8px")
+					.attr("fill","#E3E3E3")
+					.attr("text-anchor", "middle");	  
 				});
-	  
+
+
 ////////////////////////////////
 //code for strip plots
 ////////////////////////////////
-
-
-
 
 function Create_Strip_Plot(Column, Current_Physician_Value,Drug_Name = '',Current_Physician_Name=''){
 	var strip_plot_height = 100
 	var dataset = [];
     var numDataPoints = 500;
-    var padding = 10
-    var opacity= .1;
+    var padding = 40
+    var opacity= .05;
     var xRange = Math.random() * 1000;
-    var Strip_Circle_r = 4
+    var Strip_Circle_r = 3
+    var commasFormatter = d3.format(",.0f")
 
     if(Drug_Name == ''){
-    	var StripPlot_URL = "http://169.53.15.199:20900/histogramData/"+Column;
+    	var StripPlot_URL = "http://169.53.15.199:20900/histogramData/"+Column
+    	Drug_Name = 'All Drugs';
     } else {var StripPlot_URL = "http://169.53.15.199:20900/histogramData/"+Column+"/"+Drug_Name;}
 
 	d3.json(StripPlot_URL, function(data) {
@@ -375,13 +446,10 @@ function Create_Strip_Plot(Column, Current_Physician_Value,Drug_Name = '',Curren
 
 
 	selData = Current_Physician_Value
-
-	var sorted_dataset =  dataset.sort(function(a, b){return a-b}) //is it coming sorted already?
-	console.log(sorted_dataset)
-	console.log(sorted_dataset) 	
+	console.log(dataset)
 	var Num_Values = dataset.length
 	var Num_Greater_Than = 0
-	for (var i = 0; i < Num_Values; i++) {if(sorted_dataset[i] > selData){Num_Greater_Than =i-1; break;}}    
+	for (var i = 0; i < Num_Values; i++) {if(dataset[i] > selData){Num_Greater_Than =i-1; break;}}    
 	console.log(Num_Greater_Than)
 	console.log(Num_Values)  
 	var percentile = Num_Greater_Than/Num_Values
@@ -402,8 +470,11 @@ function Create_Strip_Plot(Column, Current_Physician_Value,Drug_Name = '',Curren
 	//set the plot id based on the column passed to the function
 	if(Column== 'TotalClaimCountAgg'){
 		PlotID = "#strip2"
+		Plot_Label = Math.round(Current_Physician_Value) + ' Prescriptions Written'
 	} else{
 		PlotID = "#strip1"
+		Plot_Label = '$'+ Math.round(Current_Physician_Value)
+		xAxis = xAxis.tickFormat(function(d) { return "$" + commasFormatter(d); })
 	}
 
 	var svg_strip = d3.select(PlotID)
@@ -411,10 +482,97 @@ function Create_Strip_Plot(Column, Current_Physician_Value,Drug_Name = '',Curren
       .attr("width",w)
       .attr("height",strip_plot_height);
 
+	console.log(percentile)
+
+	
+	//create box for percentiles.
+	var percentile_box_width = 120
+	var percentile_box_height = 50 
+	svg_strip.selectAll("rect")
+		.data([Current_Physician_Value])
+		.enter()
+		.append("rect")
+		.attr("width", percentile_box_width)
+		.attr("height", percentile_box_height)
+		.attr("x", function(d) {
+		return xScale(d)-percentile_box_width/2;
+		})
+		.attr("y", 1)
+		.style({stroke: "#9E4646", "stroke-width": "1px",fill:"white"});
+	
+	svg_strip.selectAll("text")
+		.data([Current_Physician_Value])
+		.enter()
+		.append("text")
+		.text(Doctor_Name)
+		.attr("x", function(d) {
+		return xScale(d);
+		})
+		.attr("y", 15)
+		.attr("font-family","sans-serif")
+		.attr("font-size", "10px")
+		.attr("font-weight", "bold")
+		.attr("fill","black")
+		.attr("text-anchor", "middle");
+
+	svg_strip.selectAll("text2")
+
+		.data([Current_Physician_Value])
+		.enter()
+		.append("text")
+		.text(Math.round(percentile*100)+' Percentile')
+		.attr("x", function(d) {
+		return xScale(d);
+		})
+		.attr("y", 44)
+		.attr("font-family","sans-serif")
+		.attr("font-size", "9px")
+		.attr("fill","black")
+		.attr("text-anchor", "middle");
+
+	svg_strip.selectAll("text3")
+		.data([Current_Physician_Value])
+		.enter()
+		.append("text")
+		.text(Plot_Label)
+		.attr("x", function(d) {
+		return xScale(d);
+		})
+		.attr("y", 31)
+		.attr("font-family","sans-serif")
+		.attr("font-size", "9px")
+		.attr("fill","black")
+		.attr("text-anchor", "middle");
+
+	svg_strip.selectAll("text4")
+		.data([Current_Physician_Value])
+		.enter()
+		.append("text")
+		.text(Drug_Name)
+		.attr("x", w/2)
+		.attr("y", 90)
+		.attr("font-family","sans-serif")
+		.attr("font-size", "9px")
+		.attr("fill","grey")
+		.attr("text-anchor", "middle");
+
+	svg_strip.selectAll("line")
+		.data([Current_Physician_Value])
+		.enter()
+		.append("line")
+		.attr("x1", function(d) {
+		return xScale(d);})
+		.attr("x2", function(d) {
+		return xScale(d);})
+		.attr("y1", 50)
+		.attr("y2", 65)
+		.style({stroke: "#9E4646", "stroke-width": "1px",});
+		
 	svg_strip.selectAll("circle")
 		.data(dataset)
 		.enter()
 		.append("circle")
+		.transition("Add Circles")
 		.attr("cx", function(d) {
 		return xScale(d);
 		})
@@ -432,22 +590,9 @@ function Create_Strip_Plot(Column, Current_Physician_Value,Drug_Name = '',Curren
 		})
 		.attr("cy", 70)
 		.attr("r", Strip_Circle_r)
-		.style({stroke: "red", "stroke-width": "2px",fill:"red"});
+		.style({stroke: "#9E4646", "stroke-width": "2px",fill:"#9E4646"});
 
-	//create box for percentiles.
-	var percentile_box_width = 60 
-	var percentile_box_height = 30 
-	svg_strip.selectAll("rect")
-		.data(selData)
-		.enter()
-		.append("rect")
-		.attr("width", percentile_box_width)
-		.attr("height", percentile_box_height)
-		.attr("x", function(d) {
-		return xScale(d)-percentile_box_width/2;
-		})
-		.attr("y", 30)
-		.style({stroke: "red", "stroke-width": "1px",fill:"white"});
+
 
 
 	//Create X axis
@@ -455,159 +600,10 @@ function Create_Strip_Plot(Column, Current_Physician_Value,Drug_Name = '',Curren
 		.attr("class", "axis")
 		.attr("transform", "translate("+0+"," + 70 + ")")
 		.call(xAxis);
+
+
 	})
-	
 	}
-
-
-
-
-
-	  // var strip_plot_height = 100
-	  // var dataset = [];
-   //    var numDataPoints = 500;
-   //    var padding = 10
-   //    var opacity= .1;
-   //    var xRange = Math.random() * 1000;
-   //    var Strip_Circle_r = 4
-   //  //  console.log("xRange: "+xRange);
-
-      // for (var i = 0; i < numDataPoints; i++) {
-      //     var newNumber1 = Math.floor(Math.random() * xRange);
-      //     dataset.push([newNumber1]);
-      //   //  console.log(newNumber1);
-      //   }
-
-      // //generate a datapoint to mark with a triangle
-      // var selData= [Math.floor(Math.random() * xRange)];
-      // console.log("selection:"+selData);
-
-      
-      //calculate percentile of value
-      // var sorted_dataset =  dataset.sort(function(a, b){return a-b}) 
-      // var Num_Values = dataset.length
-      // var Num_Greater_Than = 0
-      // for (var i = 0; i < Num_Values; i++) {if(sorted_dataset[i]==selData[0]){Num_Greater_Than =i;}}      
-      // var percentile = Num_Greater_Than/Num_Values
-
-
-      // //scale 
-      // var xScale = d3.scale.linear()
-      //                .domain([0, d3.max(dataset, function(d) { return parseInt(d); })])
-      //                .range([0+padding*2, w-padding*2]);
-
-      // //Define X axis
-      // var xAxis = d3.svg.axis()
-      //           .scale(xScale)
-      //           .orient("bottom")
-      //           .tickValues([d3.min(dataset, function(d) { return parseInt(d); }),d3.max(dataset, function(d) { return parseInt(d); })]);
-
-
-      // //define separate svg for the strip plots           
-      // var svg_strip1 = d3.select("#strip1")
-      // .append("svg")
-      // .attr("width",w)
-      // .attr("height",strip_plot_height);
-      
-      // var svg_strip2 = d3.select("#strip2")
-      // .append("svg")
-      // .attr("width",w)
-      // .attr("height",strip_plot_height);
-
-
-
-  //     svg_strip1.selectAll("circle")
-  //        .data(dataset)
-  //        .enter()
-  //        .append("circle")
-  //        .attr("cx", function(d) {
-  //           return xScale(d);
-  //        })
-  //        .attr("cy", 70)
-  //        .attr("r", Strip_Circle_r)
-  //        .style({stroke: "#62b5d1", "stroke-width": "2px", fill:"#62b5d1", "opacity":opacity});
-
-
-  //     svg_strip1.selectAll("circleFocus")
-  //        .data(selData)
-  //        .enter()
-  //        .append("circle")
-  //        .attr("cx", function(d) {
-  //           return xScale(d);
-  //        })
-  //        .attr("cy", 70)
-  //        .attr("r", Strip_Circle_r)
-  //        .style({stroke: "red", "stroke-width": "2px",fill:"red"});
-
-  //     //create box for percentiles.
-  //     var percentile_box_width = 60 
-  //     var percentile_box_height = 30 
-  //     svg_strip1.selectAll("rect")
-  //        .data(selData)
-  //        .enter()
-  //        .append("rect")
-  //        .attr("width", percentile_box_width)
-  //        .attr("height", percentile_box_height)
-  //        .attr("x", function(d) {
-  //           return xScale(d)-percentile_box_width/2;
-  //        })
-  //        .attr("y", 30)
-  //        .style({stroke: "red", "stroke-width": "1px",fill:"white"});
-
-
-  //       //Create X axis
-  //     svg_strip1.append("g")
-  //       .attr("class", "axis")
-  //       .attr("transform", "translate("+0+"," + 70 + ")")
-  //       .call(xAxis);
-	
-
-  //     //Create second strip plot. All the same code as above currently 
-  //    svg_strip2.selectAll("circle")
-  //        .data(dataset)
-  //        .enter()
-  //        .append("circle")
-  //        .attr("cx", function(d) {
-  //           return xScale(d);
-  //        })
-  //        .attr("cy", 70)
-  //        .attr("r", Strip_Circle_r)
-  //        .style({stroke: "#62b5d1", "stroke-width": "2px", fill:"#62b5d1", "opacity":opacity});
-
-
-  //     svg_strip2.selectAll("circleFocus")
-  //        .data(selData)
-  //        .enter()
-  //        .append("circle")
-  //        .attr("cx", function(d) {
-  //           return xScale(d);
-  //        })
-  //        .attr("cy", 70)
-  //        .attr("r", Strip_Circle_r)
-  //        .style({stroke: "red", "stroke-width": "2px",fill:"red"});
-
-
-  //       //Create X axis
-  //     svg_strip2.append("g")
-  //       .attr("class", "axis")
-  //       .attr("transform", "translate("+0+"," + 70 + ")")
-  //       .call(xAxis);
-      
-  //     svg_strip2.selectAll("rect")
-  //        .data(selData)
-  //        .enter()
-  //        .append("rect")
-  //        .attr("width", percentile_box_width)
-  //        .attr("height", percentile_box_height)
-  //        .attr("x", function(d) {
-  //           return xScale(d)-percentile_box_width/2;
-  //        })
-  //        .attr("y", 30)
-  //        .style({stroke: "red", "stroke-width": "1px",fill:"white"});
-
-		// </script>
-
-
+		 </script>
     </body>
-
 </html>
