@@ -85,7 +85,7 @@ def specialties():
     return doQuery("SELECT Specialty FROM Specialties")
 
 @app.route('/ziploc/<zipcode>')
-def ziploc(zipcode):
+def ziploc(zipcode, generate=generateDict):
     resp='';
     query="""SELECT CONCAT('{"lat":', ST_Y(loc), ',"lng":', ST_X(loc),'}') AS latlng FROM ZipLoc WHERE """;
     query+='zip={};'.format(zipcode)
