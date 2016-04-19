@@ -128,7 +128,7 @@ def hoverTable(physician):
   SUM(AmountOfPaymentUSDollarsAgg)              AS PmntTot
 FROM OpenPaymentPrescrJoin4
 WHERE PhysicianProfileID={physician}
-GROUP BY Rx;'''.format(physician=physician))
+GROUP BY Rx,PmntType;'''.format(physician=physician))
 
 @app.route('/histogramData/<column>')
 @app.route('/histogramData/<column>/<drug>')
