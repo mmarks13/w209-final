@@ -5,55 +5,6 @@ TODO: pass in filters as arguments instead of using attributes, and remove reset
 */
 
 var sql=(function(module){
-    // var to hold attribute resetters
-    module._resetData={}
-    // fn to reset attributes by calling their resetters
-    module.reset_filters = function() {
-	Object.keys(module._resetData).forEach(function(attr) {
-	    module[attr]=module._resetData[attr];
-	});
-    }
-    // factory to make attributes (var/getter/setter) given their name
-    // and a default val/resetter
-    function makeAttribute(module, attrName, defaultVal, subAccessor) {
-        var _attrName='_'+attrName;
-        module[_attrName]=defaultVal||null;
-	module._resetData
-        if(subAccessor) {
-            module[attrName]=function(_) {
-                if(arguments.length>0) {
-                    module[_attrName]=_;
-                    return module;
-                }
-                return subAccessor(module[_attrName]);
-            }
-        } else {
-            module[attrName]=function(_) {
-                if(arguments.length>0) {
-                    module[_attrName]=_;
-                    return module;
-                }
-                return module[_attrName];
-            }
-        }
-    }
-
-    // This is an object whose keys are specialties (i.e., unique values).  Its getter extracts the keys.
-    makeAttribute(module, 'providerSpecialties', {}, Object.keys)
-    // Leaflet geographic bounding box
-    makeAttribute(module, 'boundingBox');
-    makeAttribute(module, 'firstName');
-    makeAttribute(module, 'middleName');
-    makeAttribute(module, 'lastName');
-    // affixes/qualifiers
-    makeAttribute(module, 'sfxName');
-    // street address
-    makeAttribute(module, 'addr');
-    // 5-digit zip
-    makeAttribute(module, 'zip');
-    // query result limit
-    makeAttribute(module, 'limit');
-    
     // helper to turn leaflet L.LatLng to Mariadb 'Lon Lat' string
     module._llstring = function(ll) {
 	return `${ll.lng} ${ll.lat}`;
@@ -65,56 +16,56 @@ var sql=(function(module){
     
     // helper to make a WHERE clause string from the filters set
     // Mariadb is case insensitive by default, so this isn't littered with LCASEs
-    module._makeWhere = function() {
-	var where={'PhysicianProfileZip5=Zip5': 1};
-	var bb=module.boundingBox()
-	if(bb) {
-	    where[`ST_WITHIN(Coords, ST_GeomFromText("${module._bbstring(bb)}"))`]=1;
+    module.make_where = function(opts) {
+	var where=['PhysicianProfileZip5=Zip5'];
+	if(opts.bbox) {
+	    where.push(`ST_WITHIN(Coords, ST_GeomFromText("${module._bbstring(opts.bbox)}"))`);
 	}
-	var spc=module.providerSpecialties();
-	if(spc && spc.length>0) {
+	if(opts.specialties && opts.specialties.length>0) {
 	    var quoted=[]
-	    for(var i=0;i<spc.length;++i) {
-		quoted.push('"'+spc[i]+'"');
+	    for(var i=0;i<opts.specialties.length;++i) {
+		quoted.push('"'+opts.specialties[i]+'"');
 	    }
 	    var qstr=quoted.join(',');
-	    where[`PhysicianProfilePrimarySpecialty IN (${qstr})`]=1;
+	    where.push(`PhysicianProfilePrimarySpecialty IN (${qstr})`);
 	}
-	var fn=module.firstName();
-	if(fn && fn.length>0) {
-	    where[`PhysicianProfileFirstName="${fn}"`]=1;
+	if(opts.name) {
+	    var name=opts.name;
+	    if(name.first) {
+		where.push(`PhysicianProfileFirstName="${opts.name.first}"`);
+	    }
+	    if(name.middle) {
+		where.push(`PhysicianProfileMiddleName="${opts.name.middle}"`);
+	    }
+	    if(name.last) {
+		where.push(`PhysicianProfileLastName="${opts.name.last}"`);
+	    }
+	    if(name.sfx) {
+		where.push(`PhysicianProfileSuffix="${opts.name.sfx}"`);
+	    }
 	}
-	var mn=module.middleName();
-	if(mn && mn.length>0) {
-	    where[`PhysicianProfileMiddleName="${mn}"`]=1;
+	
+	if(opts.addr) {
+	    where.push(`InAddress like "${'%'+opts.addr+'%'}"`);
 	}
-	var ln=module.lastName();
-	if(ln && ln.length>0) {
-	    where[`PhysicianProfileLastName="${ln}"`]=1;
+	if(opts.city) {
+	    where.push(`PhysicianProfileCity=${opts.city}`);
 	}
-	var sn=module.sfxName();
-	if(sn && sn.length>0) {
-	    where[`PhysicianProfileSuffix="${sn}"`]=1;
+	if(opts.state) {
+	    where.push(`PhysicianProfileStae=${opts.state}`);
 	}
-		
-	var addr=module.addr();
-	if(addr && addr.length>0) {
-	    where[`InAddress like "${'%'+addr+'%'}"`]=1;
+	if(opts.zip) {
+	    where.push(`Zip5=${opts.zip}`);
 	}
-	var zip=module.zip();
-	if(zip && zip.length>0) {
-	    where[`Zip5=${zip}`]=1;
-	}
-	    
-	var whereClause=Object.keys(where).join(separator='\nAND ');
-	if(whereClause!=='') {
-	    return "WHERE "+whereClause;
+
+	if(where) {
+	    return "WHERE "+where.join('\n AND ');
 	}
 	return '';
     }
     // Helper to construct the RxPlorer physician query
-    module._makeQuery = function() {
-	var query=`SELECT
+    module.make_query = function(opts) {
+	return `SELECT
 	PhysicianProfileID         AS physId,
 	PhysicianProfileLastName as lastName,
 	CONCAT_WS(' ',
@@ -135,14 +86,9 @@ var sql=(function(module){
 	FROM PhysicianProfileSupplement
 	INNER JOIN GeolocatedAddresses on GeolocAddrID=ID
 	INNER JOIN ZipLoc on zip=Zip5
-	${module._makeWhere()}`;
-	var limit=module.limit();
-	if(limit && limit>0) {
-		query = query + `\nLIMIT ${limit}`;
-	} else {
-	    // no limit
-	}
-	return query+';';
+
+	${module.make_where(opts)}
+	${opts.limit?'LIMIT '+opts.limit.toString():''};`;
     }
 
     // low priv query endpoint to the UI.
@@ -157,8 +103,8 @@ var sql=(function(module){
 		     cached: true});
     }
     // Main API to retrieve providers
-    module.findProviders = function() {
-	return module.query(module._makeQuery());
+    module.find_providers = function(opts) {
+	return module.query(module.make_query(opts));
     }
 
     return module;

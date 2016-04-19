@@ -14,7 +14,6 @@
     <script src='/js/oboe-browser.min.js'></script>
     <script src='rxplorer-sql.js'></script>
     <script src='rxplorer-map.js'></script>
-    <script src='rxplorer-specialties.js'></script>
     <script src='rxplorer-physician.js'></script>
     <script src='rxplorer-tl.js'></script>
     <style>
@@ -71,7 +70,7 @@
     <h2 class='rx-subtitle'>Visualizing the relationship between pharmaceutical company payments and drug prescriptions</h2>
     <div>
       <div id='rx-physician-selector'> </div>
-      <div id='rx-table-lens' >
+      <div id='rx-table-lens' class='rx-hidden'>
 	<input id='rx-select-again' type='button' value='Return to selector' style='width:auto;'/>
       </div>
     </div>
@@ -92,7 +91,11 @@
 	  physician.marker_cb(function(ev) {
   	      activate_table_lens($(ev.target).data().psData);
 	  });
-	  $('#rx-select-again').on('click', activate_physician_selector);
+	  $('#rx-select-again').on('click',function(data){
+              $('#rx-physician-selector').addClass('rx-hidden');
+              $('#rx-table-lens').removeClass('rx-hidden').text(data);
+	      // activate_physician_selector(data);
+	  });
       });
     </script>
   </body>

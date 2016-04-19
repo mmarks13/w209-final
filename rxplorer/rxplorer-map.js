@@ -14,10 +14,11 @@ var map=(function(module){
 	module.map = L.map(selector_string,{
 	    zoom: 4
 	});
-	module.Marker = L.Marker.extend({
-	    options: {
-		related: null
-	    }
+	module._zipMarkerIcon=L.icon({
+	    iconUrl: '/images/gold-star.png',
+	    iconSize: [38,38],
+	    iconAnchor: [19,19],
+	    popupAncor: [19,38]
 	});
 	module.baseTiles=L.tileLayer('http://{s}.tile.osm.org/{z}/{x}/{y}.png', {
 	    attribution: '&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors'
@@ -42,27 +43,30 @@ var map=(function(module){
 	    maxBounds: module._max_bounds
 	};
 	Object.assign(opts, options); // merge
-	console.log("Received options", options);
-	console.log("Using options", opt);
-	module.map.setView(center, opts);
+	module.map.setView(opts.center, opts.zoom, {animate: true});
 	return module;
     }
     
     // Add physician location markers, using jquery to associate the
     // data record with the element.
-    module.addMarker = function(loc, msg, data) {
-	var marker=L.marker(loc);
-	$(marker).data('psData', data);
-	return marker
-	    .addTo(module._markers)
+    module.addMarker = function(loc, msg, title, data) {
+	var marker=L.marker(loc, {
+	    title: title
+	})
+	    .addTo(module.map)
 	    .bindPopup(msg);
+	module._markers.push(marker);
+	$(marker).data('psData', data);
+	return marker;
     }
     // Remove all physician location markers
     module.clearMarkers = function() {
 	if(module._markers) {
-	    module.map.removeLayer(module._markers);
+	    module._markers.forEach(function(marker){
+		module.map.removeLayer(marker);
+	    });
 	}
-	module._markers=L.layerGroup();
+	module._markers=[];
 	return module;
     }
 
@@ -70,12 +74,22 @@ var map=(function(module){
     // Put a unique different colored marker up
     // for the specified zip code, and recenter the map.
     module.setZipMarker = function(loc, zip) {
+	module.clearZipMarker();
 	module.refresh({center: loc});
-	var marker=L.marker(loc,{icon: L.Icon()});
-	$(marker).data('psData', data);
-	return marker
-	    .addTo(module._markers)
-	    .bindPopup(msg);
+	var zipMsg=`ZIP code ${zip}`;
+	module._zipMarker=L.marker(loc,{title: zipMsg,
+					icon: module._zipMarkerIcon});
+	return module._zipMarker
+	    .addTo(module.map)
+	    .bindPopup(zipMsg);
     }
+    module.clearZipMarker = function(loc, zip) {
+	if(module._zipMarker) {
+	    module.map.removeLayer(module._zipMarker);
+	    module._zipMarker=undefined;
+	}
+	return module;
+    }
+    
     return module;
 }(map||{}));

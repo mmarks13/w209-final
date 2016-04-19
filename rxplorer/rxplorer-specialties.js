@@ -14,7 +14,7 @@ var specialties=(function(module){
 		alert(resp.err);
 	    }
 	});
-	specialties.specialty.on('change', function(ev) {
+	sel.on('change', function(ev) {
 	    var opts=ev.target.selectedOptions;
 	    var chosen={}
 	    for(var i=0; i < opts.length; ++i) {
@@ -25,7 +25,6 @@ var specialties=(function(module){
 		    break;
 		}
 	    }
-	    sql.providerSpecialties(chosen);
 	});
 	return module;
     }
