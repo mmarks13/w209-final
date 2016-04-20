@@ -113,7 +113,8 @@ def mainTable(physician=None):
     SUM(AmountOfPaymentUSDollarsAgg)              AS PmntTot
 FROM OpenPaymentPrescrJoin4
 {where}
-GROUP BY Rx;'''.format(where=where))
+GROUP BY Rx
+ORDER BY PmntTot DESC;'''.format(where=where))
 
 
 
