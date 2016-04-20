@@ -3,6 +3,15 @@
 
 <style>
 
+.background {
+  position: absolute;
+  left: 0px;
+  top: 0px;
+  width: 1000px;
+  height: 1000px;
+
+}
+
 /*set the containers for the two charts that make up the table lens.*/
 .container_chart1 {
   position: absolute;
@@ -17,12 +26,13 @@
   width: 400px;
 }
 
+
 /*set the container for the hover tooltip.*/
 div.tooltip {	
     position: absolute;			
     text-align: center;			
-    width: 200px;					
-    height: 90px;					
+    width: 215px;					
+    height: 105px;					
     padding: 2px;				
     font: 12px sans-serif;		
     background: white;	
@@ -63,12 +73,14 @@ div.tooltip {
 <html lang="en">
     <head>
         <meta charset="utf-8">
-        <title>Physicians' Pharma Relationships</title>
+        <title>Physicians' Pharma Relationships</title> 
+        <script type="text/javascript" src="/js/simplify.js"></script>
         <script type="text/javascript" src="/js/d3.js"></script>
     </head>
     <h2> Physicians' Pharma Relationships</h2>
     <body> 
-
+	<div class="background" id="background_svg">
+	</div>    
     <!--add the divs for the strip plots above the plot titles. This will allow the two plots to share the title text-->
     <div class="container_stripPlot1" id="strip1">
 	</div>
@@ -86,7 +98,7 @@ div.tooltip {
         <script type="text/javascript">	
         	//variables for doctor name and physician ID
         	var Doctor_Name = "Dr. John Smith"
-        	var Physician_ID = 348327
+        	var Physician_ID = 141274
 
         	//set variables for charts
 			var w = 400;
@@ -112,8 +124,37 @@ div.tooltip {
 			var div = d3.select("div").append("div")
 			    .attr("class", "tooltip")	
 			    .attr("id", "Hover_Graph")			
-			    .style("opacity", 0);		
+			    .style("opacity", 0);
 
+			var svg_background = d3.select("#background_svg")
+			.append("svg")
+			.attr("width",1000)
+			.attr("height",1000);
+
+			svg_background.selectAll("rect1")
+				   .data(0)
+				   .enter()
+				   .append("rect")
+				   .attr("y", 0)
+				   .attr("x",0)
+				   .attr("height", h)
+				   .attr("width",w)
+				   .attr("fill", 'none')
+				   .on("click", function(d){
+					   	//turn off pointer events to prevent double plotting. the function turns them back on
+	    				d3.select("#chart1").selectAll("svg").attr("pointer-events", "none")
+	    				d3.select("#chart2").selectAll("svg").attr("pointer-events", "none")
+
+					   	d3.select("#strip1").selectAll("svg").transition("Strip1 All Drugs")
+			            	.delay(1000)
+			            d3.select("#strip2").selectAll("svg").transition("Strip2 All Drugs")	
+					   		.delay(1000)
+					   	d3.select("#strip1").selectAll("svg").remove()
+					   	d3.select("#strip2").selectAll("svg").remove()
+
+					   	Create_Strip_Plot('TotalClaimCountAgg', d[0] ,'','Test Name')
+						Create_Strip_Plot('AmountOfPaymentUSDollarsAgg', d[1] ,'' , 'Test Name');
+				   });
 			// var svg_tooltip = d3.select("#Hover_Graph")
 			// .append("svg");	
 
@@ -148,7 +189,10 @@ div.tooltip {
 				   .attr("fill", d3.rgb(barColor))
 
 				   //add on mouseover pop up functionality
-				   .on("mouseover", function(d) {	
+				   .on("click", function(d) {	
+				   	//turn off pointer events to prevent double plotting. the function turns them back on
+    				d3.select("#chart1").selectAll("svg").attr("pointer-events", "none")
+    				d3.select("#chart2").selectAll("svg").attr("pointer-events", "none")
 				   	bar_Value = d[2] //since we are using d again, we need to convert the orginal d to a new variable 
 				   	console.log(d)
 
@@ -185,7 +229,7 @@ div.tooltip {
 			            	.style("left", (x_cord) + "px")		
 			                .style("top", (y_cord-40) + "px")
 					
-					    Bar_x_Scale_Start = 70
+					    Bar_x_Scale_Start = 82
 
 						var xScale_hover = d3.scale.linear()
 							.domain([0,d3.max(Matching_Array_Slice,function(d){return d[2];})])
@@ -197,7 +241,7 @@ div.tooltip {
 
 			            //create variable to append svg objects to tooltip 	
 			            var div_svg = div.append("svg")
-				           .attr("width",200)
+				           .attr("width",300)
 				           .attr("height",100)
 
 				        //append bars   	
@@ -257,18 +301,18 @@ div.tooltip {
 					})
 
 					
-		        	.on("mouseout", function(d) {		
+		        	.on("mouseout", function(d) {
 		            div.transition("remove tooltip")
 		              	.style("opacity", 0)
-		              	//the strip plot transitions are causing all sorts of problems. 
-		      //       d3.select("#strip1").selectAll("svg").transition("Strip1 All Drugs")
-		      //       	.delay(500)
-		      //       d3.select("#strip2").selectAll("svg").transition("Strip2 All Drugs")	
-				   	// 	.delay(500)
+		       //        	// the strip plot transitions are causing all sorts of problems. 
+		       //      d3.select("#strip1").selectAll("svg").transition("Strip1 All Drugs")
+		       //      	.delay(500)
+		       //      d3.select("#strip2").selectAll("svg").transition("Strip2 All Drugs")	
+				   		// .delay(500)
 
 		            div.selectAll("svg").remove();	//remove the created svg's in the tooltop
-		      //       d3.select("#strip1").selectAll("svg").remove()
-				   	// d3.select("#strip2").selectAll("svg").remove()
+		   //          d3.select("#strip1").selectAll("svg").remove()
+				 //   	d3.select("#strip2").selectAll("svg").remove()
 
 				 //   	Create_Strip_Plot('TotalClaimCountAgg', d[0] ,'','Test Name')
 					// Create_Strip_Plot('AmountOfPaymentUSDollarsAgg', d[1] ,'' , 'Test Name');
@@ -293,7 +337,11 @@ div.tooltip {
 				   		return xScale_chart2(d[0]);
 				   })
 				   .attr("fill", d3.rgb(barColor))
-				   .on("mouseover", function(d){
+				   .on("click", function(d){
+				   	//turn off pointer events to prevent double plotting. the function turns them back on
+    				d3.select("#chart1").selectAll("svg").attr("pointer-events", "none")
+    				d3.select("#chart2").selectAll("svg").attr("pointer-events", "none")
+
 				   	d3.select("#strip1").selectAll("svg").transition("Strip1 Selected Drug")
 		            d3.select("#strip2").selectAll("svg").transition("Strip2 Selected Drug")	
 				   	bar_Value = d[2] //since we are using d again, we need to convert the orginal d to a new variable 
@@ -303,9 +351,12 @@ div.tooltip {
 
 					Create_Strip_Plot('AmountOfPaymentUSDollarsAgg', d[1] ,bar_Value , 'Test Name')
 				   	Create_Strip_Plot('TotalClaimCountAgg', d[0] ,bar_Value,'Test Name');
-					})
-				   .on("mouseleave", function(d){
-				   	//this is causing all sorts of problems. Comment out for now. 
+					});
+				 //   .on("mouseout", function(d){
+				 //   	//turn off pointer events to prevent double plotting. the function turns them back on
+    	// 			d3.select("#chart1").selectAll("svg").attr("pointer-events", "none")
+    	// 			d3.select("#chart2").selectAll("svg").attr("pointer-events", "none")
+
 				 //   	d3.select("#strip1").selectAll("svg").transition("Strip1 All Drugs")
 		   //          	.delay(1000)
 		   //          d3.select("#strip2").selectAll("svg").transition("Strip2 All Drugs")	
@@ -315,7 +366,7 @@ div.tooltip {
 
 				 //   	Create_Strip_Plot('TotalClaimCountAgg', d[0] ,'','Test Name')
 					// Create_Strip_Plot('AmountOfPaymentUSDollarsAgg', d[1] ,'' , 'Test Name');
-				   });
+				   // });
 
 
 
@@ -394,7 +445,7 @@ div.tooltip {
 					.data([d3.max(Main_dataset,function(d){return d[1];})])
 					.enter()
 					.append("text")
-					.text("Hover cursor on bars for drug specific info")
+					.text("Click on bars for drug specific info")
 					.attr("x", function(d){ return (xScale(d))/2 +Main_bar_x_Scale_Start;})
 					.attr("y", function(d, i) {
 							   		return yScale(i)+barHeight/2+4;
@@ -402,13 +453,14 @@ div.tooltip {
 					.attr("font-family","sans-serif")
 					.attr("font-size", "8px")
 					.attr("fill","#E3E3E3")
-					.attr("text-anchor", "middle");
+					.attr("text-anchor", "middle")
+					.attr("pointer-events", "none");
 
 				svg_chart2.selectAll("text1")
 					.data([d3.max(Main_dataset,function(d){return d[1];})])
 					.enter()
 					.append("text")
-					.text("Hover cursor on bars for drug specific info")
+					.text("Click on bars for drug specific info")
 					.attr("x", function(d){ return (xScale(d))/2 +Main_bar_x_Scale_Start;})
 					.attr("y", function(d, i) {
 							   		return yScale(i)+barHeight/2+4;
@@ -416,7 +468,8 @@ div.tooltip {
 					.attr("font-family","sans-serif")
 					.attr("font-size", "8px")
 					.attr("fill","#E3E3E3")
-					.attr("text-anchor", "middle");	  
+					.attr("text-anchor", "middle")
+					.attr("pointer-events", "none");	  
 				});
 
 
@@ -425,11 +478,14 @@ div.tooltip {
 ////////////////////////////////
 
 function Create_Strip_Plot(Column, Current_Physician_Value,Drug_Name = '',Current_Physician_Name=''){
+
+
+
 	var strip_plot_height = 100
 	var dataset = [];
     var numDataPoints = 500;
     var padding = 40
-    var opacity= .05;
+    var opacity= .08;
     var xRange = Math.random() * 1000;
     var Strip_Circle_r = 3
     var commasFormatter = d3.format(",.0f")
@@ -446,15 +502,11 @@ function Create_Strip_Plot(Column, Current_Physician_Value,Drug_Name = '',Curren
 
 
 	selData = Current_Physician_Value
-	console.log(dataset)
+
 	var Num_Values = dataset.length
 	var Num_Greater_Than = 0
 	for (var i = 0; i < Num_Values; i++) {if(dataset[i] > selData){Num_Greater_Than =i-1; break;}}    
-	console.log(Num_Greater_Than)
-	console.log(Num_Values)  
 	var percentile = Num_Greater_Than/Num_Values
-
-	console.log(percentile)
 
     //scale 
     var xScale = d3.scale.linear()
@@ -466,6 +518,8 @@ function Create_Strip_Plot(Column, Current_Physician_Value,Drug_Name = '',Curren
               .scale(xScale)
               .orient("bottom")
               .tickValues([d3.min(dataset, function(d) { return parseInt(d); }),d3.max(dataset, function(d) { return parseInt(d); })]);
+
+
 
 	//set the plot id based on the column passed to the function
 	if(Column== 'TotalClaimCountAgg'){
@@ -482,9 +536,31 @@ function Create_Strip_Plot(Column, Current_Physician_Value,Drug_Name = '',Curren
       .attr("width",w)
       .attr("height",strip_plot_height);
 
-	console.log(percentile)
 
-	
+
+
+
+    var Circle_Y = 70
+	var Downsampled_Array = [];
+
+	var Num_Values = dataset.length
+	if(Num_Values > 400){
+		Sample_Values = Math.floor(Num_Values*.90)
+		
+		for (var i = 0; i < Num_Values; i++) {
+			if(i > 400){break;};
+			Downsampled_Array.push(dataset[Math.floor(Math.random() * Sample_Values)])};
+		
+		for (var i = Sample_Values; i < Num_Values; i++) {
+			Downsampled_Array.push(dataset[i])};
+	}
+
+
+
+
+
+
+
 	//create box for percentiles.
 	var percentile_box_width = 120
 	var percentile_box_height = 50 
@@ -520,7 +596,7 @@ function Create_Strip_Plot(Column, Current_Physician_Value,Drug_Name = '',Curren
 		.data([Current_Physician_Value])
 		.enter()
 		.append("text")
-		.text(Math.round(percentile*100)+' Percentile')
+		.text(Math.round(percentile*100,1)+' Percentile')
 		.attr("x", function(d) {
 		return xScale(d);
 		})
@@ -569,7 +645,7 @@ function Create_Strip_Plot(Column, Current_Physician_Value,Drug_Name = '',Curren
 		.style({stroke: "#9E4646", "stroke-width": "1px",});
 		
 	svg_strip.selectAll("circle")
-		.data(dataset)
+		.data(Downsampled_Array)
 		.enter()
 		.append("circle")
 		.transition("Add Circles")
@@ -599,10 +675,14 @@ function Create_Strip_Plot(Column, Current_Physician_Value,Drug_Name = '',Curren
 	svg_strip.append("g")
 		.attr("class", "axis")
 		.attr("transform", "translate("+0+"," + 70 + ")")
-		.call(xAxis);
-
+		.call(xAxis)
+	svg_strip.transition().delay(500)
+	//turn off pointer events to prevent double plotting
+    d3.select("#chart1").selectAll("svg").attr("pointer-events", "all")
+    d3.select("#chart2").selectAll("svg").attr("pointer-events", "all")
 
 	})
+
 	}
 		 </script>
     </body>
