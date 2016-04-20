@@ -140,22 +140,22 @@ var physician=(function(module) {
 	      <div class='ps-filter'>
 	        <h4 class='rx-subheading'>Filter by name:</h4>
 	        <div>Letter case does not affect the search results, but only exact spelling matches are returned.</div>
-	        <span class='ps-filter-label'>Last:</span><input name='name-last' size='32'/><br />
-	        <span class='ps-filter-label'>First:</span><input name='name-first' size='32'/><br />
-	        <span class='ps-filter-label'>Middle:</span><input name='name-middle' size='32'/><br />
-	        <span class='ps-filter-label'>Suffix:</span><input name='name-sfx' size='5'/><br />
+	        <label class='ps-filter-label'>Last:</label><input name='name-last' size='32'/><br />
+	        <label class='ps-filter-label'>First:</label><input name='name-first' size='32'/><br />
+	        <label class='ps-filter-label'>Middle:</label><input name='name-middle' size='32'/><br />
+	        <label class='ps-filter-label'>Suffix:</label><input name='name-sfx' size='5'/><br />
 	      </div>
 	      <div class='ps-filter'>
 	        <h4 class='rx-subheading'>Filter by location:</h4>
-	        <span class='ps-filter-label'>Address:</span><input name='addr' size='80'/><br />
-	        <span class='ps-filter-label'>City:</span><input name='city' size='80'/><br />
-	        <span class='ps-filter-label'>State:</span><input name='state' size='80'/><br />
-	        <span class='ps-filter-label'>ZIP:</span><input name='zip' size='5' maxlength='5'/><br />
+	        <label class='ps-filter-label'>Address:</label><input name='addr' size='80'/><br />
+	        <label class='ps-filter-label'>City:</label><input name='city' size='80'/><br />
+	        <label class='ps-filter-label'>State:</label><input name='state' size='80'/><br />
+	        <label class='ps-filter-label'>ZIP:</label><input name='zip' size='5' maxlength='5'/><br />
 	      </div>
 	      <div class='ps-filter'>
 	        <h4 class='rx-subheading'>Special filters:</h4>
-	        <span class='ps-filter-label'>Result limit</span><input name='limit' value='1000' maxlength='6'/><br/>
-	        <span class='ps-filter-label'>Debug:</span><input name='debug' style='width: 32px;' type='checkbox' />
+	        <label class='ps-filter-label'>Result limit</label><input name='limit' value='1000' maxlength='6'/><br/>
+	        <label class='ps-filter-label'>Debug:</label><input name='debug' style='width: 32px;' type='checkbox' />
 	      </div>
 	    </div>`);
 	//Load physician specialties list

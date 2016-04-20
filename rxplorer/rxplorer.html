@@ -9,6 +9,7 @@
     <link rel='stylesheet' href='rxplorer-physician.css'/>
     <script src='/js/jquery-2.2.3.min.js'></script>
     <script src='/js/d3.min.js'></script>
+    <script src="/js/plotly.min.js"></script>
     <script src='/js/leaflet.js'></script>
     <script src='/js/jquery.dataTables.min.js'></script>
     <script src='/js/oboe-browser.min.js'></script>
@@ -70,33 +71,40 @@
     <h2 class='rx-subtitle'>Visualizing the relationship between pharmaceutical company payments and drug prescriptions</h2>
     <div>
       <div id='rx-physician-selector'> </div>
-      <div id='rx-table-lens' class='rx-hidden'>
-	<input id='rx-select-again' type='button' value='Return to selector' style='width:auto;'/>
+      <div id='rx-table-lens-holder' class='rx-hidden'>
+	<div id='rx-table-lens'>
+	</div>
+	<div>
+	  <input id='rx-select-again' type='button' value='Return to selector' style='width:auto;'/>
+	</div>
       </div>
     </div>
     <script>
       function activate_table_lens(physician) {
           console.log('Creating table lens for', physician);
-	  tableLens.init('#rx-table-lens', physician);
           $('#rx-physician-selector').addClass('rx-hidden');
-          $('#rx-table-lens').removeClass('rx-hidden');
+          $('#rx-table-lens-holder').removeClass('rx-hidden');
+	  tableLens.init('#rx-table-lens', physician);
       }
       function activate_physician_selector() {
           $('#rx-physician-selector').removeClass('rx-hidden');
-          $('#rx-table-lens').addClass('rx-hidden').empty();
+          $('#rx-table-lens-holder').addClass('rx-hidden').empty()
       }
       $(document).ready(function(){
           physician.init($('#rx-physician-selector'));
           physician.on_results_table_row_click(activate_table_lens);
 	  physician.marker_cb(function(ev) {
+	      console.log("this", this);
+	      console.log("args", arguments);
   	      activate_table_lens($(ev.target).data().psData);
 	  });
 	  $('#rx-select-again').on('click',function(data){
-              $('#rx-physician-selector').addClass('rx-hidden');
-              $('#rx-table-lens').removeClass('rx-hidden').text(data);
-	      // activate_physician_selector(data);
-	  });
-      });
+	      activate_physician_selector(data);
+	      });
+	 });
+	 if(location.search=='?test-tl') {
+ 	     activate_table_lens({name: "Firstname", lastName: "Last-Name", physId: 348327});
+	 }
     </script>
   </body>
 </html>
