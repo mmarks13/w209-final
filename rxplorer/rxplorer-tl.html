@@ -37,16 +37,11 @@
     </div>
     <script>
       $(document).ready(function(){
-        sql.firstName('STEPHEN')
-	.middleName('DALE')
-        .lastName('GRUBB')
-        .addr('909 Pireway Rd')
-        .city('Tabor City')
-	.state('NC');
-	sql.findProviders().done(function(d) {
-	console.log(d)
-	});
-	});
+        {name: 'STEPHEN DALE',
+        lastName: 'GRUBB',
+        addr: '909 Pireway Rd',
+        city: 'Tabor City',
+	state: 'NC',
     </script>
   </body>
 </html>

@@ -18,6 +18,19 @@ def root():
             ["Go away"],
             mimetype='text/plain')
 
+@app.route('/robots.txt')
+def robots():
+        return Response(
+            ["User-agent: *\n Disallow: /\n"],
+            mimetype='text/plain')
+
+@app.route('/favicon.ico')
+def favicon():
+        return send_from_directory(
+            '../images',
+            'favicon.png',
+            mimetype='image/png')
+
 
 def generateDict(query):
     err=''
