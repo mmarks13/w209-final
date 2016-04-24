@@ -406,6 +406,7 @@ var physician=(function(module) {
 	    module.status_clear_all();
 	    tbl.draw();
 	    module.results_sel.find('.ps-table tr.odd').css('background-color','#EEEEEE'); // hack to force alt. color
+            select_tab(module.results_sel);
 	});
 	return module;
     }
