@@ -164,7 +164,7 @@ var tableLens=(function(module) {
 		    },
 		    xaxis: {
 			label: 'Value in USD',
-			range: Math.max.apply(null,module.mainData.map(function(f){return f[fld]}))
+			range: Math.max.apply(null,module.main_data.map(function(f){return f[fld]}))
 		    },
 		    yaxis: {
 			label: 'Nature of Payments'

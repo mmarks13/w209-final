@@ -5,10 +5,13 @@
     <meta charset="utf-8"/>
     <meta name="viewport" content="width=device-width, height=device-height, initial-scale=1"/>
     <link rel="stylesheet" href="/css/leaflet.css" />
-    <link rel="stylesheet" href="/css/jquery.dataTables.min.css"/>
     <script src="/js/jquery-2.2.3.min.js"></script>
     <script src="/js/leaflet.js"></script>
+    <script src="/js/oboe-browser.min.js"></script>
+    <script src="/js/wicket.js"></script>
+    <script src="/js/wicket-leaflet.js"></script>
     <script src="rxplorer-map.js"></script>
+    <script src="rxplorer-sql.js"></script>
     <style>
       div#map{
       height: 600px;
@@ -17,11 +20,103 @@
     </style>
   </head>
   <body>
-    <div id="map">
+    <div id="map1">
     </div>
+    <div id="map2">
+    </div>
+    <svg height='240' width='240'>
+      <linearGradient id="r" >
+        <stop offset="0" stop-color="#fff"/>
+        <stop offset="1" stop-color="#f00"/>
+      </linearGradient>
+      <linearGradient id="t" gradientTransform="rotate(90,.5,.5)">
+        <stop offset="0" stop-color="#00f"/>
+        <stop offset="1" stop-color="#fff" />
+      </linearGradient>
+      <rect x="20" y="20" height="200" width="200" fill="url(#r)" fill-opacity=".5"/>
+      <rect x="20" y="20" height="200" width="200" fill="url(#t)" fill-opacity=".5"/>
+      <text x="20" y="220" transform="rotate(-90,20,220)">Total Payments</text>
+      <text x="20" y="230">Rx Count</text>
+    </svg>
     <script>
-      $(document).ready(function(){
-         map.init($('#map')[0]);
-      });
-    </script>
+    function makeInst() {
+        return {
+            data: {},
+            bdy: {},
+            rxMin: 0, rxMax: 0,
+            pmntMin: 0, pmntMax: 0
+	};
+    }
+    function getData(inst, doc, code, sqlQuery) {
+        var p1=oboe('http://169.53.15.199:20900/static/'+doc).node({
+            '!*': function(row){
+                inst.data[row[code]]=row;
+                inst.rxMin=Math.min(inst.rxMin, row.RxCnt);
+                inst.rxMax=Math.max(inst.rxMax, row.RxCnt);
+                inst.pmntMin=Math.min(inst.pmntMin, row.PmntTot);
+                inst.pmntMax=Math.max(inst.pmntMax, row.PmntTot);
+            }});
+        var p2=sql.query(sqlQuery)
+            .node({
+                'data.*': function(row) {
+                    inst.bdy[row.code]=row.bdy;
+                },
+                'error': function(err) { alert(err); }
+            });
+	return [p1,p2];
+    }
+    function makeColor(inst, row) {
+        var r=255*(row.RxCnt-inst.rxMin)/(inst.rxMax-inst.rxMin)||0;
+        var b=255*(row.PmntTot-inst.pmntMin)/(inst.pmntMax-inst.pmntMin)||0;
+        var rstr=Math.floor(r).toString(16);
+        var bstr=Math.floor(b).toString(16);
+        if(rstr.length==1)
+            rstr='0'+rstr;
+        if(bstr.length==1)
+            bstr='0'+bstr;
+	var color='#'+rstr+'00'+bstr;
+        return color;
+    }
+    function process(inst, map) {
+	var layer=L.layerGroup();  
+        for(var code in inst.data) {
+            var row=inst.data[code];
+            if(inst.bdy[code]) {
+                var wkt = new Wkt.Wkt();
+                wkt.read(inst.bdy[code]);
+                var obj=wkt.toObject();
+    		var color=makeColor(inst, row);
+                obj.setStyle({
+                    fill: true,
+                    fillColor: color,
+                    fillOpacity: .5,
+                    stroke: false,
+                });
+                layer.addLayer(obj);
+            }
+        }
+        layer.addTo(map);
+    }
+
+    function wait(p1,p2,cb) {
+	p1.done(function(){
+	    p2.done(function(){
+		cb();
+	    });
+	});
+    }
+		    
+
+    $(document).ready(function(){
+	var states=makeInst();
+        var map1=map.init($('#map1')[0]).map;
+        var p1=getData(states, 'bystate.json', 'StateCode', 'SELECT stusps as code, ST_ASTEXT(Boundaries) as bdy from states;');
+        wait(p1[0],p1[1],function(){process(states, map1);});
+
+	var counties=makeInst();
+        var map2=map.init($('#map2')[0]).map;
+        var p2=getData(counties, 'bycounty.json', 'FipsCode', 'SELECT CONCAT(statefp,countyfp) as code, ST_ASTEXT(Boundaries) as bdy from counties;');
+        wait(p2[0],p2[1],function(){process(counties, map2);});
+    });
+        </script>
 </html>
