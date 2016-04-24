@@ -28,7 +28,7 @@ def robots():
 def favicon():
         return send_from_directory(
             '../images',
-            'favicon.png',
+            'rx.png',
             mimetype='image/png')
 
 
