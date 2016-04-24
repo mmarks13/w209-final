@@ -5,7 +5,7 @@ var physician=(function(module) {
 	// left column for controls
 	var col=$('<div>')
 	    .addClass('rx-column')
-	    .css('width', '35%');
+	    .css('width', '50%');
 	sel.append(col);
 	module.add_controls(col);
 	module.add_filters(col);
@@ -13,7 +13,7 @@ var physician=(function(module) {
  	// right column for results
 	col=$('<div>')
 	    .addClass('rx-column')
-	    .css({width: '65%',
+	    .css({width: '50%',
 		  'border-left': 'thin solid #CCCCCC',
 		  padding: '1%'});
 	col.append($('<h3>')
@@ -116,6 +116,9 @@ var physician=(function(module) {
 		    opt.text(row.Specialty);
 		    sel.append(opt);
 		},
+		'data': function(data) {
+		    module._specialties_selector=sel.find('option');
+		},
 		'error': function(err) {
 		    if(err.length>0) {
 			alert(resp.err);
@@ -128,36 +131,38 @@ var physician=(function(module) {
     // Append filter inputs under the provided selector, and plug in
     // events to send changes to the sql module.
     module.add_filters=function(sel) {
-	sel.append(`<div class='ps-filters'>
-	      <h3 class='rx-heading'>Search filters</h3>
-	      <div class='ps-filter'>
-	        <h4 class='rx-subheading'>Filter by specialty:</h4>
-	        <div><em>Tip</em>: You can select multiple specialties by pressing Ctrl- or Shift- while you click.</div>
-	        <select class='ps-filter' name='specialties' multiple=''>
-	          <option value=''>All specialties</option>
+	sel.append(`<fieldset class='ps-filters'>
+	      <legend class='rx-heading'>Search Filters</legend>
+	      <fieldset class='ps-filter'>
+	        <legend class='rx-subheading'>Specialty</legend>
+		   <div>
+		       Select specialties from the list. <br />
+		       You can select multiple items with ctrl-click.</div>
+                <input class='ps-autocomplete' placeholder='See matching specialties' name='specialties' size='64'/>
+                <select class='ps-filter' name='specialties' multiple=''>
 	        </select>
-	      </div>
-	      <div class='ps-filter'>
-	        <h4 class='rx-subheading'>Filter by name:</h4>
+	      </fieldset>
+	      <fieldset class='ps-filter'>
+                <legend class='rx-subheading'>Name</legend>
 	        <div>Letter case does not affect the search results, but only exact spelling matches are returned.</div>
-	        <label class='ps-filter-label'>Last:</label><input name='name-last' size='32'/><br />
-	        <label class='ps-filter-label'>First:</label><input name='name-first' size='32'/><br />
-	        <label class='ps-filter-label'>Middle:</label><input name='name-middle' size='32'/><br />
-	        <label class='ps-filter-label'>Suffix:</label><input name='name-sfx' size='5'/><br />
-	      </div>
-	      <div class='ps-filter'>
-	        <h4 class='rx-subheading'>Filter by location:</h4>
-	        <label class='ps-filter-label'>Address:</label><input name='addr' size='80'/><br />
-	        <label class='ps-filter-label'>City:</label><input name='city' size='80'/><br />
-	        <label class='ps-filter-label'>State:</label><input name='state' size='80'/><br />
-	        <label class='ps-filter-label'>ZIP:</label><input name='zip' size='5' maxlength='5'/><br />
-	      </div>
-	      <div class='ps-filter'>
-	        <h4 class='rx-subheading'>Special filters:</h4>
-	        <label class='ps-filter-label'>Result limit</label><input name='limit' value='1000' maxlength='6'/><br/>
-	        <label class='ps-filter-label'>Debug:</label><input name='debug' style='width: 32px;' type='checkbox' />
-	      </div>
-	    </div>`);
+	        <label for='name-last'>Last</label><input name='name-last' size='32'/><br />
+	        <label for='name-first'>First</label><input name='name-first' size='32'/><br />
+	        <label for='name-middle'>Middle</label><input name='name-middle' size='32'/><br />
+	        <label for='name-sfx'>Suffix</label><input name='name-sfx' size='5'/><br />
+ 	      </fieldset>
+	      <fieldset class='ps-filter'>
+	        <legend class='rx-subheading'>Location</legend>
+	        <label for='addr'>Address</label><input name='addr' size='80'/><br />
+	        <label for='city'>City</label><input name='city' size='80'/><br />
+	        <label for='state'>State</label><input name='state' size='80'/><br />
+	        <label for='zip'>ZIP</label><input name='zip' size='5' maxlength='5'/><br />
+ 	      </fieldset>
+	      <fieldset class='ps-filter'>
+	        <legend class='rx-subheading'>Special</legend>
+	        <label for='limit'>Limit</label><input name='limit' value='1000' maxlength='6' size='80'/><br/>
+	        <label for='debug'>Debug</label><input name='debug' type='checkbox' />
+	      </fieldset>
+	    </fieldset>`);
 	//Load physician specialties list
 	module.add_specialties(module.root.find('.ps-filter [name="specialties"]'));
 	module.root.find('.ps-filter [name="zip"]').on('change', function(ev){
@@ -174,6 +179,17 @@ var physician=(function(module) {
 	    module.status(ev.target, 'warn', 'filters changed since last search');
 	    module.show_debug_data();
 	});
+
+	module.root.find('.ps-specialty-entry')
+	    .on('input', function(ev) { // each keystroke
+		var sub=ev.target.value.toUpperCase();
+		var options=module.root.find('.ps-filter select[name=specialties] option')
+		    .css('display', 'block');
+		if(ev.target.value && ev.target.value !== '') {
+		    options.filter(function(){return !$(this).attr('value').toUpperCase().contains(sub);})
+			.css('display', 'none');
+		}
+	    });
     }
     module.reset_filters=function() {
 	var filters=module.root.find('.ps-filter');
@@ -189,8 +205,6 @@ var physician=(function(module) {
 	    elt.checked=false;
 	});
 	
-	// specialties is funny; option 0 is special
-	module.root.find('.ps-filter [name="specialties"] :selected').children()[0].selected=true;
 	// And make sure we have a sane limit
 	module.root.find('.ps-filter [name="limit"]').value=1000;
 	return module;
@@ -201,12 +215,8 @@ var physician=(function(module) {
 	    name:{}
 	};
 	var sel=module.root.find('.ps-filter [name="specialties"] :selected');
-	var dummy=sel.children()[0];
 	sel.each(function(count, elt){
-	    // child 0 is a dummy
-	    if(elt != dummy) {
-		ret.specialties.push(elt.value);
-	    }
+	    ret.specialties.push(elt.value);
 	});
 	module.root.find('.ps-filter input').each(function(i, elt){
 	    if(elt.name && elt.value) {
@@ -296,6 +306,8 @@ var physician=(function(module) {
 	    module.root.find('.ps-sql-where').text(
 		`Filter string: [${where}]`
 		    .toString());
+	} else {
+	    module.root.find('.ps-sql-where').empty();
 	}
     }
 
