@@ -1,37 +1,23 @@
 var physician=(function(module) {
-    module.init=function(sel) {
-	module.root=sel;
-	sel.empty();
+    module.init=function(filter_sel, results_sel) {
+	module.filter_sel=filter_sel
+	    .empty();
+	module.results_sel=results_sel
+	    .empty();
 	// left column for controls
-	var col=$('<div>')
-	    .addClass('rx-column')
-	    .css('width', '50%');
-	sel.append(col);
-	module.add_controls(col);
-	module.add_filters(col);
+	var lcol=$('<div>')
+	    .addClass('rx-column');
+	module.filter_sel.append(lcol);
+	module.add_controls(lcol);
+	module.add_filters(lcol);
+	var rcol=$('<div>')
+	    .addClass('rx-column');
+	module.filter_sel.append(rcol)
+	module.add_map(rcol);
 
  	// right column for results
-	col=$('<div>')
-	    .addClass('rx-column')
-	    .css({width: '50%',
-		  'border-left': 'thin solid #CCCCCC',
-		  padding: '1%'});
-	col.append($('<h3>')
-		   .addClass('rx-heading')
-		   .text('Search Results'));
-	col.append($('<div>')
-		   .html(`After searching, use this table to navigate the results.<br />
-			 The search box on the right lets you filter the results based on their contents.<br />
-			 Click on any row to examine payment/prescription details.`));
-	sel.append(col);
-	module.add_results(col);
+	module.add_results(results_sel);
 
- 	// and the map underneath
-	sel.append($('<h4>')
-		   .addClass('rx-subheading')
-		   .text('Filtering map'));
-	sel.append($('<div>').html('Zooming and panning in this map limits the search to the shown region.<br />\n<em>Tip</em>: Shift-and-drag lets you quickly zoom in on a rectangular area.'));
-	module.add_map(sel);
 
 	console.log('Ready!!');
 	return module;
@@ -63,18 +49,18 @@ var physician=(function(module) {
     // helpers to set and clear the status CSS classes
     module.status=function(sel, type, msg) {
 	module.status_clear(sel);
-	return module.root.find(sel)
+	return module.filter_sel.find(sel)
 	    .addClass('ps-status-'+type, true)
 	    .attr('title', msg);
     }
     module.status_clear=function(sel) {
-	return module.root.find(sel)
+	return module.filter_sel.find(sel)
 	    .removeClass('ps-status-err')
 	    .removeClass('ps-status-warn')
 	    .removeAttr('title');
     }
     module.status_clear_all=function(type) {
-	module.status_clear(module.root.find('.ps-status-warn,.ps-status-err'));
+	module.status_clear(module.filter_sel.find('.ps-status-warn,.ps-status-err'));
     }
 
     // Helpers for SQL Filter inputs
@@ -88,7 +74,7 @@ var physician=(function(module) {
     module._sql_filter_resetters={}
     module.sql_filter_callback=function(sel, method, resetter, xform) {
 	module._sql_filter_resetters[sel]=resetter||'';
-	var elt=module.root.find(sel);
+	var elt=module.filter_sel.find(sel);
 	if(!xform) {
 	    elt.on('change', function(ev) {
 		sql[method](ev.target.value);
@@ -127,7 +113,7 @@ var physician=(function(module) {
 	    });
     	return module;
     }
-    
+
     // Append filter inputs under the provided selector, and plug in
     // events to send changes to the sql module.
     module.add_filters=function(sel) {
@@ -163,9 +149,10 @@ var physician=(function(module) {
 	        <label for='debug'>Debug</label><input name='debug' type='checkbox' />
 	      </fieldset>
 	    </fieldset>`);
+	
 	//Load physician specialties list
-	module.add_specialties(module.root.find('.ps-filter [name="specialties"]'));
-	module.root.find('.ps-filter [name="zip"]').on('change', function(ev){
+	module.add_specialties(module.filter_sel.find('.ps-filter [name="specialties"]'));
+	module.filter_sel.find('.ps-filter [name="zip"]').on('change', function(ev){
 	    if (ev.target.value) {
 		$.getJSON('http://169.53.15.199:20900/ziploc/'+`${ev.target.value}`)
 		    .done(function(latlng){
@@ -175,15 +162,15 @@ var physician=(function(module) {
 		map.clearZipMarker();		
 	    }
 	});
-	module.root.find('.ps-filter *').on('change', function(ev){
+	module.filter_sel.find('.ps-filter *').on('change', function(ev){
 	    module.status(ev.target, 'warn', 'filters changed since last search');
 	    module.show_debug_data();
 	});
 
-	module.root.find('.ps-specialty-entry')
+	module.filter_sel.find('.ps-specialty-entry')
 	    .on('input', function(ev) { // each keystroke
 		var sub=ev.target.value.toUpperCase();
-		var options=module.root.find('.ps-filter select[name=specialties] option')
+		var options=module.filter_sel.find('.ps-filter select[name=specialties] option')
 		    .css('display', 'block');
 		if(ev.target.value && ev.target.value !== '') {
 		    options.filter(function(){return !$(this).attr('value').toUpperCase().contains(sub);})
@@ -192,7 +179,7 @@ var physician=(function(module) {
 	    });
     }
     module.reset_filters=function() {
-	var filters=module.root.find('.ps-filter');
+	var filters=module.filter_sel.find('.ps-filter');
 	filters.find(':selected').each(function(elt){
 	    elt.selected=false;
 	});
@@ -206,7 +193,7 @@ var physician=(function(module) {
 	});
 	
 	// And make sure we have a sane limit
-	module.root.find('.ps-filter [name="limit"]').value=1000;
+	module.filter_sel.find('.ps-filter [name="limit"]').value=1000;
 	return module;
     }
     module.get_filters=function(){
@@ -214,11 +201,11 @@ var physician=(function(module) {
 	    specialties:[],
 	    name:{}
 	};
-	var sel=module.root.find('.ps-filter [name="specialties"] :selected');
+	var sel=module.filter_sel.find('.ps-filter [name="specialties"] :selected');
 	sel.each(function(count, elt){
 	    ret.specialties.push(elt.value);
 	});
-	module.root.find('.ps-filter input').each(function(i, elt){
+	module.filter_sel.find('.ps-filter input').each(function(i, elt){
 	    if(elt.name && elt.value) {
 		if(elt.name.startsWith('name-')) {
 		    ret.name[elt.name.substring(5)]=elt.value;
@@ -231,7 +218,11 @@ var physician=(function(module) {
     }
 
     
-	       module.add_map=function(sel) {
+    module.add_map=function(sel) {
+	sel.append($('<h4>')
+		   .addClass('rx-subheading')
+		   .text('Filtering map'));
+	sel.append($('<div>').html('Zooming and panning in this map limits the search to the shown region.<br />\n<em>Tip</em>: Shift-and-drag lets you quickly zoom in on a rectangular area.'));
 	sel.append($('<div>')
 		   .addClass('ps-map')
 		   .addClass('ps-filters'));
@@ -246,14 +237,19 @@ var physician=(function(module) {
         return module._marker_cb;
     }
     module.on_results_table_row_click=function(cb) {
-	module.root.find('.ps-table').find('tbody').on('click', 'tr', function () {
-	    cb(module.root.find('.ps-table').dataTable().api().row( this ).data());
+	module.results_sel.find('.ps-table').find('tbody').on('click', 'tr', function () {
+	    cb(module.results_sel.find('.ps-table').dataTable().api().row( this ).data());
 	});
     }			    
 
         
     module.add_results=function(sel) {
-	sel.append($(`<div class='ps-results'>
+	sel.append($(`<h3 class='rx-heading'>Search Results</h3>
+	  <div>After searching, use this table to navigate the results.<br />
+	    The search box on the right lets you filter the results based on their contents.<br />
+	    Click on any row to examine payment/prescription details.
+  	  </div>
+          <div class='ps-results'>
             <div class='ps-rowcount'></div>
             <pre class='ps-error-msg'></pre>
             <table class='ps-table'>
@@ -291,31 +287,31 @@ var physician=(function(module) {
     
     // show the progress wheel icon
     module.progress_start=function() {
-	module.root.find('.ps-progress-spinner')
+	module.filter_sel.find('.ps-progress-spinner')
 	    .css('display', 'inline');
     }
     // clear the progress wheel icon
     module.progress_stop=function() {
-	module.root.find('.ps-progress-spinner')
+	module.filter_sel.find('.ps-progress-spinner')
 	    .css('display', 'none');
     }
     
     module.show_debug_data=function() {
-	if(module.root.find('.ps-filter [name="debug"]')[0].checked) {
+	if(module.filter_sel.find('.ps-filter [name="debug"]')[0].checked) {
 	    var where=sql.make_query(module.get_filters());
-	    module.root.find('.ps-sql-where').text(
+	    module.results_sel.find('.ps-sql-where').text(
 		`Filter string: [${where}]`
 		    .toString());
 	} else {
-	    module.root.find('.ps-sql-where').empty();
+	    module.results_sel.find('.ps-sql-where').empty();
 	}
     }
 
     // Clean up for the reset button
     // Drop SQL debug data, and uncheck the button
     module.reset_debug_data=function() {
-	module.root.find('.ps-sql-where').empty();
-	module.root.find('.ps-filter [name="debug"]')[0].checked=false;
+	module.results_sel.find('.ps-sql-where').empty();
+	module.filter_sel.find('.ps-filter [name="debug"]')[0].checked=false;
     }
     // Remove visual indications of pending work
     module.reset_controls=function() {
@@ -344,7 +340,7 @@ var physician=(function(module) {
 	module.reset_results_table();
 	map.reset();
 	map.reset();
-	sql.limit(module.root.find('.ps-filter [name="limit"]')[0].value);
+	sql.limit(module.filter_sel.find('.ps-filter [name="limit"]')[0].value);
     }
 
     module.make_physician_marker_msg=function(row) {
@@ -369,7 +365,7 @@ var physician=(function(module) {
     }
 
     module.reset_results_table=function() {
-	var tbl=module.root.find('.ps-table');
+	var tbl=module.results_sel.find('.ps-table');
 	tbl.find('tbody').empty();
 	var api=tbl.dataTable().api();
 	api.rows().remove()
@@ -382,7 +378,7 @@ var physician=(function(module) {
     // putting rows into the table and in markers on the map
     module.update_providers=function() {
 	module.show_debug_data();
-	module.root.find('.ps-rowcount').text('');
+	module.results_sel.find('.ps-rowcount').text('');
 	var tbl=module.reset_results_table();
 	map.clearMarkers();
 	module.progress_start();
@@ -396,20 +392,20 @@ var physician=(function(module) {
 	    },
 	    'data': function(data) {
 		if(data) {
-		    module.root.find('.ps-rowcount').text(`Found ${data.length} matching physicians`);		    
+		    module.results_sel.find('.ps-rowcount').text(`Found ${data.length} matching physicians`);		    
 		}
 		module.status_clear_all();
 	    }, 
 	    'error': function(err){
 		if(err && err.length>0) {
-		    module.root.find('.ps-error-msg').text(err);
+		    module.results_sel.find('.ps-error-msg').text(err);
 		}
 	    }
 	}).done(function(){
 	    module.progress_stop();
 	    module.status_clear_all();
 	    tbl.draw();
-	    module.root.find('.ps-table tr.odd').css('background-color','#EEEEEE'); // hack to force alt. color
+	    module.results_sel.find('.ps-table tr.odd').css('background-color','#EEEEEE'); // hack to force alt. color
 	});
 	return module;
     }

@@ -12,12 +12,10 @@
 .ps-filters {
     padding-top: 1em;
     display: block;
-    margin: none;
-    padding: none;
 }
 .ps-filter {
     display: inline-block;
-    width: 45%;
+
 }
 .ps-filter label {
     text-align: right;
