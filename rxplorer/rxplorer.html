@@ -7,6 +7,7 @@
     <link rel='stylesheet' href='/css/leaflet.css' />
     <link rel='stylesheet' href='/css/jquery.dataTables.min.css'/>
     <link rel='stylesheet' href='rxplorer-physician.css'/>
+    <link rel='stylesheet' href='rxplorer.css'/>
     <script src='/js/jquery-2.2.3.min.js'></script>
     <script src='/js/d3.min.js'></script>
     <script src="/js/plotly.min.js"></script>
@@ -19,57 +20,7 @@
     <script src='rxplorer-map.js'></script>
     <script src='rxplorer-physician.js'></script>
     <script src='rxplorer-tl.js'></script>
-    <style>
-      * { vertical-align:top; }
-
-      /* inline-block diplay + a bit under half width to make these into 2 columns */
-      .rx-column {
-          max-width: 48%;
-          display: inline-block;
-      }
-
-      /* make headings more uniform */
-      h1,h2,h3,h4,h5,h6 {
-          font-family: sans;
-          font-weight: bold;
-      }
-      h1,.rx-title {
-          font-size: xx-large;
-      }
-      h2,.rx-subtitle {
-          font-size: x-large;
-          font-style: oblique;
-          padding-bottom: 1em;
-      }
-      h3,.rx-heading {
-          font-weight: 500;
-          font-size: large;
-      }      
-      h3,.rx-subheading {
-          font-weight: 500;
-          font-size: medium;
-          font-style: oblique;
-      }
-      .rx-tab-header {
-          display: inline-block;
-          width: 10%;
-          border: 1px solid black;
-          background-color: #FFAAFF;
-      }
-      .rx-tab-header.rx-tab-inactive {
-          background-color: #CC88CC;
-      }
-      .rx-tab-strip {
-          width: 100%;
-          border-bottom: 1px solid black;
-      }
-          
-      .rx-hidden {
-          display: none;
-          visibility: hidden;
-      }
-          
-    </style>
+    <script src='rxplorer.js'></script>
   </head>
   <body>
     <!-- Final project notes: we just define a few empty div in the
@@ -95,53 +46,6 @@
       <div id='rx-physician-results' class='rx-tab rx-hidden'></div>
       <div id='rx-table-lens'        class='rx-tab rx-hidden'></div>
     </div>
-    <script>
-      function select_tab(sel) {
-	  $('.rx-tab').addClass('rx-hidden');
-	  $('.rx-tab-header').addClass('rx-tab-inactive');
-          sel=$(sel);
-	  var hdr,tab;
-	  if(sel.attr('id').endsWith('-hdr')) {
-	      hdr=sel;
-	      tab=$('#'+sel.attr('id').slice(0,-4));
-	  } else {
-	      hdr=$('#'+sel.attr('id')+'-hdr');
-	      tab=sel;
-	  }
-	  tab.removeClass('rx-hidden');
-	  hdr.removeClass('rx-tab-inactive');
-      }
-
-      function activate_table_lens(physician) {
-          console.log('Creating table lens for', physician);
-          var sel=$('#rx-table-lens');
-          select_tab(sel);
-          tableLens.init(sel, physician);
-      }
-	  
-      function activate_physician_selector() {
-          var sel=$('#rx-physician-filter');
-          select_tab(sel);
-      }
-
-      $(document).ready(function(){
-          var filter_sel=$('#rx-physician-filter');
-          select_tab(filter_sel);
-          physician.init(filter_sel, $('#rx-physician-results'));
-          physician.on_results_table_row_click(activate_table_lens);
-          physician.marker_cb(function(ev) {
-              console.log("this", this);
-              console.log("args", arguments);
-              activate_table_lens($(ev.target).data().psData);
-          });
-	  $('.rx-tab-header').on('click', function(ev) {
-              select_tab($(this));
-	  
-	  });
-      });
-      if(location.search=='?test-tl') {
-          activate_table_lens({name: "Firstname", lastName: "Last-Name", physId: 348327});
-      }
-   </script>
+    <script src='rxplorer.js'></script>
   </body>
 </html>

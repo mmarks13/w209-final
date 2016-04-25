@@ -5,6 +5,8 @@
     <meta charset="utf-8"/>
     <meta name="viewport" content="width=device-width, height=device-height, initial-scale=1"/>
     <link rel="stylesheet" href="/css/leaflet.css" />
+    <link rel="stylesheet" href="rxplorer.css" />
+    <script src="/js/d3.min.js"></script>
     <script src="/js/jquery-2.2.3.min.js"></script>
     <script src="/js/leaflet.js"></script>
     <script src="/js/oboe-browser.min.js"></script>
@@ -20,21 +22,53 @@
     </style>
   </head>
   <body>
-    <div id="map1">
+    <h1 class='rx-title'>Physician <!--R<sub>x</sub>-->℞Plorer</h1>
+    <h2 class='rx-subtitle'>Visualizing the relationship between pharmaceutical company payments and drug prescriptions</h2>
+    <div>
+      To analyze the relationship between pharmaceutical payments to
+      prescribers and their prescribing behaviors, we can visualize
+      along a number of different axes.  One way to slice and dice
+      this is to plot it on a map to showcase geographical variations.
+      I've been intrigued by the multipoint color scale used in a
+      recent <a
+      href="http://sustainableagriculture.net/blog/pnas-wild-bee-study/">PNAS
+      paper on wild pollinators</a> (doi: 10.1073/pnas.1517685113) for conveying information about
+      the relative geographic distributions of two related variables
+      at once.
+      
+      <img src="http://sustainableagriculture.net/wp-content/uploads/2016/01/wild-bee-map2.jpg"
+	   alt="Map from PNAS doi: 10.1073/pnas.1517685113" />
     </div>
-    <div id="map2">
+
+    <div>
+There's definitely difference in statewide means from state to state; from a cursory look, there does seem to be some correlation with neighbors.  One stark outlier is Minnesota, which we might ascribe to the Mayo Clinic (a finer breakdown, or one by specialty can clarify this).
     </div>
+    <div id="map1"></div>
+    <div>
+      But when we break things down to a county granularity,
+      there are too many with zeroes to get a good sense of variation.  We
+      might be able to improve this with a more rapidly rising colo
+      gradient, for example coloring quantiles/rank rather than
+      values. Another way to might be to color based on three point gradient
+      to show difference from a (possibly regional -- map Laplacian!) mean.  (Note that map is
+      slow to load, about 10s; I'm tweaking the SQL to use the map bounding 
+      box as to determine the right granularity -- if count of zips, counties,
+      states visible is &lt;500, show the finest; commented out in the public
+     version till the bugs are worked out.)
+
+    </div>
+    <div id="map2"></div>
     <svg height='240' width='240'>
       <linearGradient id="r" >
-        <stop offset="0" stop-color="#fff"/>
-        <stop offset="1" stop-color="#f00"/>
+        <stop offset="0" stop-color="#fff" stop-opacity=".5"/>
+        <stop offset="1" stop-color="#f00" stop-opacity=".75"/>
       </linearGradient>
       <linearGradient id="t" gradientTransform="rotate(90,.5,.5)">
-        <stop offset="0" stop-color="#00f"/>
-        <stop offset="1" stop-color="#fff" />
+        <stop offset="0" stop-color="#00f" stop-opacity=".75"/>
+        <stop offset="1" stop-color="#fff" stop-opacity=".5"/>
       </linearGradient>
-      <rect x="20" y="20" height="200" width="200" fill="url(#r)" fill-opacity=".5"/>
-      <rect x="20" y="20" height="200" width="200" fill="url(#t)" fill-opacity=".5"/>
+      <rect x="20" y="20" height="200" width="200" fill="url(#r)" />
+      <rect x="20" y="20" height="200" width="200" fill="url(#t)" />
       <text x="20" y="220" transform="rotate(-90,20,220)">Total Payments</text>
       <text x="20" y="230">Rx Count</text>
     </svg>
@@ -43,19 +77,23 @@
         return {
             data: {},
             bdy: {},
-            rxMin: 0, rxMax: 0,
-            pmntMin: 0, pmntMax: 0
+            rxScale: d3.scale.linear().range([d3.rgb('#fff'),d3.rgb('#f00')]),
+            pmntScale: d3.scale.linear().range([d3.rgb('#fff'),d3.rgb('#00f')])
 	};
     }
     function getData(inst, doc, code, sqlQuery) {
+        var rxMin=0, rxMax=0, pmntMin=0, pmntMax=0;
         var p1=oboe('http://169.53.15.199:20900/static/'+doc).node({
             '!*': function(row){
                 inst.data[row[code]]=row;
-                inst.rxMin=Math.min(inst.rxMin, row.RxCnt);
-                inst.rxMax=Math.max(inst.rxMax, row.RxCnt);
-                inst.pmntMin=Math.min(inst.pmntMin, row.PmntTot);
-                inst.pmntMax=Math.max(inst.pmntMax, row.PmntTot);
-            }});
+                rxMin=Math.min(rxMin, row.RxCnt);
+                rxMax=Math.max(rxMax, row.RxCnt);
+                pmntMin=Math.min(pmntMin, row.PmntTot);
+                pmntMax=Math.max(pmntMax, row.PmntTot);
+            }}).done(function(){
+		inst.rxScale.domain([rxMin, rxMax]);
+		inst.pmntScale.domain([pmntMin, pmntMax]);
+	    });
         var p2=sql.query(sqlQuery)
             .node({
                 'data.*': function(row) {
@@ -66,18 +104,12 @@
 	return [p1,p2];
     }
     function makeColor(inst, row) {
-        var r=255*(row.RxCnt-inst.rxMin)/(inst.rxMax-inst.rxMin)||0;
-        var b=255*(row.PmntTot-inst.pmntMin)/(inst.pmntMax-inst.pmntMin)||0;
-        var rstr=Math.floor(r).toString(16);
-        var bstr=Math.floor(b).toString(16);
-        if(rstr.length==1)
-            rstr='0'+rstr;
-        if(bstr.length==1)
-            bstr='0'+bstr;
-	var color='#'+rstr+'00'+bstr;
-        return color;
+        var rc=inst.rxScale(row.RxCnt);
+	var pt=inst.pmntScale(row.PmntTot);
+	var color=d3.interpolate(rc,pt)(.5);
+	return color.toString();
     }
-    function process(inst, map) {
+function process(inst, map, opacity, zindex) {
 	var layer=L.layerGroup();  
         for(var code in inst.data) {
             var row=inst.data[code];
@@ -89,7 +121,8 @@
                 obj.setStyle({
                     fill: true,
                     fillColor: color,
-                    fillOpacity: .5,
+                    fillOpacity: opacity,
+		    zIndex: zindex,
                     stroke: false,
                 });
                 layer.addLayer(obj);
@@ -98,25 +131,109 @@
         layer.addTo(map);
     }
 
-    function wait(p1,p2,cb) {
-	p1.done(function(){
-	    p2.done(function(){
-		cb();
-	    });
+function wait(ps,cb) {
+    if(ps.length>0) {
+	ps[0].done(function(){
+	    wait(ps.slice(1),cb);
 	});
+    } else {
+	cb();
     }
-		    
+}		    
 
     $(document).ready(function(){
-	var states=makeInst();
-        var map1=map.init($('#map1')[0]).map;
-        var p1=getData(states, 'bystate.json', 'StateCode', 'SELECT stusps as code, ST_ASTEXT(Boundaries) as bdy from states;');
-        wait(p1[0],p1[1],function(){process(states, map1);});
+//	function checkVisible(cb) {
+//	    var visible=[999,999,999];	    
+//	    var p=[
+//		sql.query(`SELECT count(*) as Cnt from states WHERE ST_WITHIN(Boundaries, ST_GeomFromText("${sql._bbstring(map.map.getBounds())}"))`).node('data.*',function(row){
+//		    visible[0]=row.Cnt;
+//		}),
+//		sql.query(`SELECT count(*) as Cnt from counties WHERE ST_WITHIN(Boundaries, ST_GeomFromText("${sql._bbstring(map.map.getBounds())}"))`).node('data.*',function(row){
+//		    visible[1]=row.Cnt;
+//		}),
+//		sql.query(`SELECT count(*) as Cnt from zcta WHERE ST_WITHIN(Boundaries, ST_GeomFromText("${sql._bbstring(map.map.getBounds())}"))`).node('data.*',function(row){
+//		    visible[2]=row.Cnt;
+//		})
+//	    ];
+//	    wait(p, function(){
+//		console.log("Visible states:", visible[0], ", counties:", visible[1], ", zips:", visible[2]);
+//		cb(visible);
+//	    });
+//	}
+//	function updateVisible(visible) {
+//	    if(visible[0] < 500) {
+//		console.log(visible[0], "states visible; drawing");
+//		var states=makeInst();
+//		var p1=getData(states, 'bystate.json', 'StateCode',
+//			       `SELECT stusps as code, ST_ASTEXT(Boundaries) as bdy from states
+//			       WHERE ST_WITHIN(Boundaries,
+//					       ST_GeomFromText("${sql._bbstring(map.map.getBounds())}"));`);
+//		wait(p1,function(){process(states, map1, 1, 100); console.log("Loaded state data");});
+//	    }
+//
+//	    if(visible[1] < 500) {
+$//		console.log(visible[1], "counties visible; drawing");
+//		var counties=makeInst();
+//		var p2=getData(counties, 'bycounty.json', 'FipsCode',
+//			       `SELECT CONCAT(statefp,countyfp) as code, ST_ASTEXT(Boundaries) as bdy from counties
+//			       WHERE ST_WITHIN(Boundaries,
+//					       ST_GeomFromText("${sql._bbstring(map.map.getBounds())}"));`);
 
-	var counties=makeInst();
+//
+//            if(visible[2] < 500) {
+//		console.log(visible[12], "zips visible; drawing");
+//		var zips=makeInst();
+//		var p2=getData(zips, 'byzip.json', 'Zip',
+//			       `SELECT zcta5ce10 AS code, ST_ASTEXT(Boundaries) as bdy from zcta
+//			       WHERE ST_WITHIN(Boundaries,
+//					       ST_GeomFromText("${sql._bbstring(map.map.getBounds())}"));`);
+//		wait(p2,function(){process(counties, map1, 200); console.log("Loaded zip data");});
+//	    }
+//	}
+//	map1.on('moveend',function(ev) {
+//	    console.log("Moved map");
+//	    checkVisible(updateVisible);
+//	});
+//	map1.on('mouseover',function(ev){});
+//	map1.on('mouseout',function(ev){});
+//	checkVisible(updateVisible);
+
+	function addDetail() {
+	    var detail = L.control({position: 'bottomright'});
+	    detail.onAdd = function (mapnode) {
+		this._div = L.DomUtil.create('div', 'info detail');
+		this.update();
+		return this._div;
+	    }
+	    detail.update =  function(props) {
+		console.log(props);
+	    }
+	    return detail;
+	}
+        var map1=map.init($('#map1')[0]).map;
+	var states=makeInst();
+	var p1=getData(states, 'bystate.json', 'StateCode',
+	    `SELECT stusps as code, ST_ASTEXT(Boundaries) as bdy from states;`);
+	p1[0].done(function(){p1[1].done(function(){
+ 	    process(states, map1, 1, 100);
+ 	    console.log("Loaded state data");
+        })});
+	//info1=addDetail();
+	//info1.addTo(map1);
+	//map1.on('mouseover', function(ev) {
+	//    console.log(ev);
+	//});
+	//map1.on('mouseout', function(ev) {
+	//});
+
         var map2=map.init($('#map2')[0]).map;
-        var p2=getData(counties, 'bycounty.json', 'FipsCode', 'SELECT CONCAT(statefp,countyfp) as code, ST_ASTEXT(Boundaries) as bdy from counties;');
-        wait(p2[0],p2[1],function(){process(counties, map2);});
+	var counties=makeInst();
+	var p2=getData(counties, 'bycounty.json', 'FipsCode',
+	    `SELECT CONCAT(statefp,countyfp) as code, ST_ASTEXT(Boundaries) as bdy from counties;`);
+        p2[0].done(function(){p2[1].done(function(){
+            process(counties, map2, 1, 100);
+            console.log("Loaded county data");
+	})});
     });
         </script>
 </html>
