@@ -127,7 +127,7 @@ def mainTable(physician=None):
     SUM(NumberOfPaymentsIncludedInTotalAmountAgg) AS PmntCnt,
     SUM(AmountOfPaymentUSDollarsAgg)              AS PmntTot,
     PhysicianSpecialty                            AS Specialty
-FROM OpenPaymentPrescrJoin6
+FROM OpenPaymentPrescrJoin4
 {where}
 GROUP BY Rx
 ORDER BY PmntTot DESC;'''.format(where=where))
@@ -143,7 +143,7 @@ def hoverTable(physician):
   NameOfAssociatedCoveredDrugOrBiological1      AS Rx,
   NatureOfPaymentOrTransferOfValue              AS PmntType,
   SUM(AmountOfPaymentUSDollarsAgg)              AS PmntTot
-FROM OpenPaymentPrescrJoin6
+FROM OpenPaymentPrescrJoin4
 WHERE PhysicianProfileID={physician}
 GROUP BY Rx,PmntType;'''.format(physician=physician))
 
@@ -162,7 +162,7 @@ def histogram(column, drug = None):
     return doQuery(
 '''SELECT
    SUM(coalesce({column},0)) as Count
-FROM OpenPaymentPrescrJoin6
+FROM OpenPaymentPrescrJoin4
 {where}
 GROUP BY PhysicianProfileID
 ORDER BY Count ASC;'''.format(where=where, column=column), generateArray) 
@@ -185,7 +185,7 @@ def stripTable(specialty,drug):
     SUM(NumberOfPaymentsIncludedInTotalAmountAgg) AS PmntCnt,
     SUM(AmountOfPaymentUSDollarsAgg)              AS PmntTot
 
-FROM OpenPaymentPrescrJoin6
+FROM OpenPaymentPrescrJoin4
 WHERE PhysicianSpecialty = {specialty} {whereDrug}
 GROUP BY Physician, RxNDC;'''.format(specialty=specialty,whereDrug=whereDrug))
 
