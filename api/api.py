@@ -123,8 +123,9 @@ def mainTable(physician=None):
     NDCOfAssociatedCoveredDrugOrBiological1       AS RxNDC,
     SUM(TotalClaimCountAgg)                       AS RxCnt,
     SUM(NumberOfPaymentsIncludedInTotalAmountAgg) AS PmntCnt,
-    SUM(AmountOfPaymentUSDollarsAgg)              AS PmntTot
-FROM OpenPaymentPrescrJoin4
+    SUM(AmountOfPaymentUSDollarsAgg)              AS PmntTot,
+    PhysicianSpecialty                            AS Specialty
+FROM OpenPaymentPrescrJoin6
 {where}
 GROUP BY Rx
 ORDER BY PmntTot DESC;'''.format(where=where))
@@ -140,7 +141,7 @@ def hoverTable(physician):
   NameOfAssociatedCoveredDrugOrBiological1      AS Rx,
   NatureOfPaymentOrTransferOfValue              AS PmntType,
   SUM(AmountOfPaymentUSDollarsAgg)              AS PmntTot
-FROM OpenPaymentPrescrJoin4
+FROM OpenPaymentPrescrJoin6
 WHERE PhysicianProfileID={physician}
 GROUP BY Rx,PmntType;'''.format(physician=physician))
 
@@ -159,10 +160,32 @@ def histogram(column, drug = None):
     return doQuery(
 '''SELECT
    SUM(coalesce({column},0)) as Count
-FROM OpenPaymentPrescrJoin4
+FROM OpenPaymentPrescrJoin6
 {where}
 GROUP BY PhysicianProfileID
 ORDER BY Count ASC;'''.format(where=where, column=column), generateArray) 
+
+
+@app.route('/stripTable/<specialty>/<drug>')
+def stripTable(specialty,drug):
+    # if 'real' not in request.values:
+    #     return send_from_directory('../json', 'Hover_Table_Lens_Data.json')
+    if drug:
+        whereDrug="""and drug='{drug}'""".format(drug=drug)
+    else:
+        whereDrug=''
+
+    return doQuery('''SELECT
+    PhysicianProfileID                            AS Physician,
+    NameOfAssociatedCoveredDrugOrBiological1      AS Rx,
+    NDCOfAssociatedCoveredDrugOrBiological1       AS RxNDC,
+    SUM(TotalClaimCountAgg)                       AS RxCnt,
+    SUM(NumberOfPaymentsIncludedInTotalAmountAgg) AS PmntCnt,
+    SUM(AmountOfPaymentUSDollarsAgg)              AS PmntTot
+
+FROM OpenPaymentPrescrJoin6
+WHERE PhysicianSpecialty = {specialty} {whereDrug}
+GROUP BY Physician, RxNDC;'''.format(specialty=specialty,whereDrug=whereDrug))
 
 
 # Static file paths:
