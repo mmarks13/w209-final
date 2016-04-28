@@ -3,9 +3,10 @@ from flask import Flask, Response, request, send_from_directory
 from flask.ext.compress import Compress
 from flask.ext.cors import CORS
 
-import ujson as json
-import sqlalchemy
 import numpy as np
+import sqlalchemy
+import sys
+import ujson as json
 
 app=Flask('w209dbapi')
 Compress(app)
@@ -48,6 +49,7 @@ def generateDict(query):
                     pfx=','
     except Exception,e:
         err=',"error":' + json.dumps(str(e))
+        print >>sys.stderr, e
     finally:
         yield ']'+err+'}\n'
 
