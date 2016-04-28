@@ -11,25 +11,29 @@ var tableLens=(function(module) {
 	    .append($('<div>')
 		    .append($('<div>')
 			    .addClass('tl-pmnttot')
-			    .addClass('rx-column')
-			    .append($('<div>')
-				    .addClass('tl-histogram'))
-			    .append($('<div>')
-				    .addClass('tl-barchart')))
-		    .append($('<div>')
+			    	.addClass('rx-column')
+			    		.append($('<div>')
+					    	.addClass('tl-stripplot'))
+				    	.append($('<div>')
+					    	.addClass('tl-histogram'))
+				    	.append($('<div>')
+					    	.addClass('tl-barchart')))
+			    		.append($('<div>')
 			    .addClass('tl-rxcnt')
-			    .addClass('rx-column')
-			    .append($('<div>')
-				    .addClass('tl-histogram'))
-			    .append($('<div>')
-				    .addClass('tl-barchart'))))
-	    .append($('<div>')
-		    .addClass('tl-hover')
-		    .addClass('rx-hidden'))
-	    .append($('<div>')
-		    .addClass('tl-debug'));
-	module.root.find('.tl-barchart')
-	    .css('height', 0.75*module.root[0].getBoundingClientRect().width);
+			    	.addClass('rx-column')
+		    	  		.append($('<div>')
+					    	.addClass('tl-stripplot'))
+			    		.append($('<div>')
+				    		.addClass('tl-histogram'))
+					    .append($('<div>')
+						    .addClass('tl-barchart'))))
+	    	.append($('<div>')
+			    .addClass('tl-hover')
+			    .addClass('rx-hidden'))
+	    	.append($('<div>')
+		    	.addClass('tl-debug'));
+		module.root.find('.tl-barchart')
+	   	 .css('height', 0.75*module.root[0].getBoundingClientRect().width);
     }
 
     /// Routines to fetch data using oboe.js.  These all return the
@@ -61,9 +65,13 @@ var tableLens=(function(module) {
 			module.add_hover_chart('PmntTot', data.points[0].y);
 		    }).on('plotly_unhover', function(data) {
 			module.remove_hover_chart('PmntTot', data.points[0].y);
-		    })
+		    });
+
+		    module.add_strip_plot(module.root.find('.tl-pmnttot .tl-stripplot')[0], data);
+		    module.add_strip_plot(module.root.find('.tl-rxcnt .tl-stripplot')[0], data);
+		  },
 		    
-		},
+		
 		'error': function(err) {
 		    module.root.find('.tl-debug').append($('<pre>').text("Error: "+err));
 		}
@@ -96,6 +104,7 @@ var tableLens=(function(module) {
 	} else {
 	    rx='';
 	}
+
 	module.hist_data[field][rx]={};
 	if(col) {
 	    module.hist_data[field][rx].promise=oboe(url)
@@ -136,6 +145,8 @@ var tableLens=(function(module) {
 		}],
 		hovermode: 'closest'
 	    });
+
+
 	return module;
     }
 
@@ -186,6 +197,13 @@ var tableLens=(function(module) {
 	console.log("updating histogram strip for", fld, rx);
 	var strip=module.root.find('.tl-'+fld+' .tl-strip')
     }
+
+    module.add_strip_plot=function(domSel,  data) {
+		console.log("getting the histogram chart!!");
+		Create_Strip_Plot(domSel,'AmountOfPaymentUSDollarsAgg',100, data[0]);
+	return module;
+    }
+
 
     module.init=function(dom_element, phys_data) {
 	console.log("phys_data:", phys_data);
