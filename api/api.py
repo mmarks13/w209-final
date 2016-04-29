@@ -187,7 +187,7 @@ def stripTable(column,specialty,drug=None):
 
 FROM OpenPaymentPrescrJoin4
 WHERE PhysicianSpecialty LIKE "%%{specialty}%%"  {whereDrug} 
-GROUP BY Physician, RxNDC;'''.format(column=column,specialty=specialty,whereDrug=whereDrug))
+GROUP BY Physician, RxNDC;'''.format(column=column,specialty=specialty,whereDrug=whereDrug),generateArray)
 
 
 # Static file paths:
