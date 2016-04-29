@@ -171,11 +171,11 @@ def stripTable(specialty,drug):
     # if 'real' not in request.values:
     #     return send_from_directory('../json', 'Hover_Table_Lens_Data.json')
     if drug:
-        whereDrug="""and drug='{drug}'""".format(drug=drug)
+        whereDrug="and drug='{drug}'".format(drug=drug)
     else:
         whereDrug=''
 
-    return doQuery('''SELECT
+    return doQuery("""SELECT
     PhysicianProfileID                            AS Physician,
     NameOfAssociatedCoveredDrugOrBiological1      AS Rx,
     NDCOfAssociatedCoveredDrugOrBiological1       AS RxNDC,
@@ -184,8 +184,8 @@ def stripTable(specialty,drug):
     SUM(AmountOfPaymentUSDollarsAgg)              AS PmntTot
 
 FROM OpenPaymentPrescrJoin4
-WHERE PhysicianSpecialty = {specialty} {whereDrug}
-GROUP BY Physician, RxNDC;'''.format(specialty=specialty,whereDrug=whereDrug))
+WHERE PhysicianSpecialty = '{specialty}' {whereDrug}
+GROUP BY Physician, RxNDC;""".format(specialty=specialty,whereDrug=whereDrug))
 
 
 # Static file paths:
