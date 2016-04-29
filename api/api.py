@@ -167,7 +167,7 @@ FROM OpenPaymentPrescrJoin4
 GROUP BY PhysicianProfileID
 ORDER BY Count ASC;'''.format(where=where, column=column), generateArray) 
 
-
+@app.route('/stripTable')
 @app.route('/stripTable/<specialty>/<drug>')
 def stripTable(specialty,drug):
     # if 'real' not in request.values:
