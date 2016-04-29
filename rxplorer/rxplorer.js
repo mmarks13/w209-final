@@ -42,5 +42,5 @@ $(document).ready(function(){
     });
 });
 if(location.search=='?test-tl') {
-    activate_table_lens({name: "Firstname", lastName: "Last-Name", physId: 348327});
+    activate_table_lens({name: "Firstname", lastName: "Last-Name", physId: 348327, spec: "Allopathic & Osteopathic Physicians…"});
 }

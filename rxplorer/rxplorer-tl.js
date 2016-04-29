@@ -15,16 +15,12 @@ var tableLens=(function(module) {
 			    		.append($('<div>')
 					    	.addClass('tl-stripplot'))
 				    	.append($('<div>')
-					    	.addClass('tl-histogram'))
-				    	.append($('<div>')
 					    	.addClass('tl-barchart')))
 			    		.append($('<div>')
 			    .addClass('tl-rxcnt')
 			    	.addClass('rx-column')
 		    	  		.append($('<div>')
 					    	.addClass('tl-stripplot'))
-			    		.append($('<div>')
-				    		.addClass('tl-histogram'))
 					    .append($('<div>')
 						    .addClass('tl-barchart'))))
 	    	.append($('<div>')
@@ -39,13 +35,15 @@ var tableLens=(function(module) {
     /// Routines to fetch data using oboe.js.  These all return the
     /// promise object to permit the caller to chain additonal actions
     /// on IO completion
-    module.get_main_data=function(physId) {
+    module.get_main_data=function(physId,specialty) {
 	return oboe(`${module.urlbase}/mainTable/${physId}`)
 	    .node({
 		'data.*': function(row) {
 		    // For each rx, kick off loads for RxCnt and PmntTot hover data
-		    module.hist_data.RxCnt.promises.push(module.get_histogram_data('RxCnt', row.Rx));
-		    module.hist_data.PmntTot.promises.push(module.get_histogram_data('PmntTot', row.Rx));
+		    // module.hist_data.RxCnt.promises.push(module.get_histogram_data('RxCnt', row.Rx));
+		    // module.hist_data.PmntTot.promises.push(module.get_histogram_data('PmntTot', row.Rx));
+		    module.strip_data.RxCnt.promises.push(module.get_strip_data('RxCnt',specialty, row.Rx));
+		    module.strip_data.PmntTot.promises.push(module.get_strip_data('PmntTot',specialty, row.Rx));
 		},
 		// all data is received
 		'data': function(data) {
@@ -67,6 +65,7 @@ var tableLens=(function(module) {
 			module.remove_hover_chart('PmntTot', data.points[0].y);
 		    });
 
+
 		    module.add_strip_plot(module.root.find('.tl-pmnttot .tl-stripplot')[0], data);
 		    module.add_strip_plot(module.root.find('.tl-rxcnt .tl-stripplot')[0], data);
 		  },
@@ -77,6 +76,7 @@ var tableLens=(function(module) {
 		}
 	    });
     }
+
     module.get_hover_data=function(physId) {
 	// Get the hover data
 	module.hover_data={};
@@ -95,31 +95,33 @@ var tableLens=(function(module) {
 	    });
     }
     
-    module.get_histogram_data=function(field, rx) {
+
+
+	module.get_strip_data=function(field,specialty,rx) {
 	var col=module._fldColumns[field];
-	var url=`${module.urlbase}/histogramData/${col}`;
+	var url=`${module.urlbase}/stripTable/${col}/${specialty}`;
 	if(rx) {
 	    url += '/'+rx;
 	    rx=rx.toUpperCase();
 	} else {
 	    rx='';
 	}
-
-	module.hist_data[field][rx]={};
-	if(col) {
-	    module.hist_data[field][rx].promise=oboe(url)
-		.node({
-		    'data': function(data){
-			module.hist_data[field][rx].data=data.map(function(x){return x[0]});
-		    },
-		    'error': function(err) {
-			module.root.find('.tl-debug').append($('<pre>').text("Error retrieving RxCnt histogram data: "+err));
-		    }
-		});
+	
+	module.strip_data[field][rx]={};
+		if(col) {
+		    module.strip_data[field][rx].promise=oboe(url)
+			.node({
+			    'data': function(data){
+				module.strip_data[field][rx].data=data.map(function(x){return x[0]});
+			    },
+			    'error': function(err) {
+				module.root.find('.tl-debug').append($('<pre>').text("Error retrieving strip plot data: "+err));
+			    }
+			});
+		}
+	console.log("strip",module.strip_data[field]);
+	return module.strip_data[field][rx].promise;
 	}
-	return module.hist_data[field][rx].promise;
-    }
-    
 
     module.add_main_chart=function(domSel, title, fld, units, data) {
 	var names=data.map(function(row){return row.Rx});
@@ -199,8 +201,9 @@ var tableLens=(function(module) {
     }
 
     module.add_strip_plot=function(domSel,  data) {
-		console.log("getting the histogram chart!!");
-		Create_Strip_Plot(domSel,'AmountOfPaymentUSDollarsAgg',100, data[0]);
+	console.log("getting the histogram chart!!");
+	Create_Strip_Plot(domSel,'AmountOfPaymentUSDollarsAgg',100, data[0]);
+
 	return module;
     }
 
@@ -214,35 +217,40 @@ var tableLens=(function(module) {
 	    RxCnt:    'TotalClaimCountAgg',
 	    PmntCnt:  'NumberOfPaymentsIncludedInTotalAmountAgg',
 	    PmntTot:  'AmountOfPaymentUSDollarsAgg' ,
-	    PmntType: 'NatureOfPaymentOrTransferOfValue'
+	    PmntType: 'NatureOfPaymentOrTransferOfValue',
+	   	Specialty: 'PhysicianSpecialty'
 	};
-	module.hist_data={
+	// module.hist_data={
+	//     RxCnt: {},
+	//     PmntTot: {}
+	// };
+	module.strip_data={
 	    RxCnt: {},
 	    PmntTot: {}
 	};
+
 	module.root=$(dom_element);
 
 	// Set up the div
 	module.init_dom(phys_data);
+
 	// Load main charts
-	module.main_data_promise=module.get_main_data(phys_data.physId)
+	module.main_data_promise=module.get_main_data(phys_data.physId,phys_data.spec)
 	    .done(function(){
 		console.log("Got main table data for", phys_data.physId, ":", data);
+
 	    });
 
 	// load hover data for the physician
 	module.hist_hover_promise=module.get_hover_data(phys_data.physId);
 
+	// load strip plot data for physician with same specialty
+	module.strip_promise=module.get_strip_data('RxCnt',phys_data.spec.substring(0,phys_data.spec.length -1),null).done(function(){
+		console.log("Got RxCnt strip plot data:", data);});
 
-	// load main histogram data
-	module.main_histogram_promise=module.get_histogram_data('RxCnt',null)
-	    .done(function(){
-		console.log("Got RxCnt histogram data:", data);
-	    });
-	module.main_histogram_promise=module.get_histogram_data('PmntTot',null)
-	    .done(function(){
-		console.log("Got PmntTot histogram data:", data);
-	    });
+	module.strip_promise=module.get_strip_data('PmntTot',phys_data.spec.substring(0,phys_data.spec.length -1),null).done(function(){
+		console.log("Got Pmnt strip plot data:", data);});
+
 
 	return module;
     }    
