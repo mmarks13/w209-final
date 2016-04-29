@@ -5,30 +5,30 @@
 function Create_Strip_Plot(domSel,Column, Current_Physician_Value, All_Values, Drug_Name = '',Current_Physician_Name=''){
 	
 	// to do:
-	var Doctor_Name = "Dr. John Smith";
-	var percentile= 0.89;
+	var Doctor_Name = Current_Physician_Name;
+	//var percentile= 0.89;
 	var Plot_Label = Math.round(Current_Physician_Value) + ' Prescriptions Written';
-	var Drug_Name = 'All Drugs';
+	//var Drug_Name = 'All Drugs';
 
 	console.log("start to build up the strip plot");
 	  //Width, height, and padding
       var w = 250;
       var h = 100;
       var padding = 20;
-      var dataset = [];
+      var dataset = All_Values;
       var numDataPoints = 10;
       var opacity= 1/(Math.log(numDataPoints)^2);
       var xRange = Math.random() * 1000;
 
-      for (var i = 0; i < numDataPoints; i++) {
-          var newNumber1 = Math.floor(Math.random() * xRange);
-          dataset.push([newNumber1]);
-        }
+      // for (var i = 0; i < numDataPoints; i++) {
+      //     var newNumber1 = Math.floor(Math.random() * xRange);
+      //     dataset.push([newNumber1]);
+      //   }
 
       //generate a datapoint to mark with a triangle
-      var selData= [Math.floor(Math.random() * xRange)];
-      console.log("selection:"+selData);
-
+      // var selData= [Math.floor(Math.random() * xRange)];
+      // console.log("selection:"+selData);
+      selData= Current_Physician_Value;
       //scale 
       var xScale = d3.scale.linear()
                      .domain([0, d3.max(dataset, function(d) { return parseInt(d); })])

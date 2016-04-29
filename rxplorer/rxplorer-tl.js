@@ -35,15 +35,15 @@ var tableLens=(function(module) {
     /// Routines to fetch data using oboe.js.  These all return the
     /// promise object to permit the caller to chain additonal actions
     /// on IO completion
-    module.get_main_data=function(physId,specialty) {
-	return oboe(`${module.urlbase}/mainTable/${physId}`)
+    module.get_main_data=function(physData) {
+	return oboe(`${module.urlbase}/mainTable/${physData.physId}`)
 	    .node({
 		'data.*': function(row) {
 		    // For each rx, kick off loads for RxCnt and PmntTot hover data
 		    // module.hist_data.RxCnt.promises.push(module.get_histogram_data('RxCnt', row.Rx));
 		    // module.hist_data.PmntTot.promises.push(module.get_histogram_data('PmntTot', row.Rx));
-		    module.strip_data.RxCnt.promises.push(module.get_strip_data('RxCnt',specialty, row.Rx));
-		    module.strip_data.PmntTot.promises.push(module.get_strip_data('PmntTot',specialty, row.Rx));
+		    module.strip_data.RxCnt.promises.push(module.get_strip_data('RxCnt',physData.specialty, row.Rx));
+		    module.strip_data.PmntTot.promises.push(module.get_strip_data('PmntTot',physData.specialty, row.Rx));
 		},
 		// all data is received
 		'data': function(data) {
@@ -64,10 +64,10 @@ var tableLens=(function(module) {
 		    }).on('plotly_unhover', function(data) {
 			module.remove_hover_chart('PmntTot', data.points[0].y);
 		    });
+ 
 
-
-		    module.add_strip_plot(module.root.find('.tl-pmnttot .tl-stripplot')[0], data);
-		    module.add_strip_plot(module.root.find('.tl-rxcnt .tl-stripplot')[0], data);
+		    module.add_strip_plot(module.root.find('.tl-pmnttot .tl-stripplot')[0],'PmntTot', physData, null);
+		    module.add_strip_plot(module.root.find('.tl-rxcnt .tl-stripplot')[0],'RxCnt', physData, null);
 		  },
 		    
 		
@@ -119,7 +119,6 @@ var tableLens=(function(module) {
 			    }
 			});
 		}
-	console.log("strip",module.strip_data[field]);
 	return module.strip_data[field][rx].promise;
 	}
 
@@ -200,9 +199,18 @@ var tableLens=(function(module) {
 	var strip=module.root.find('.tl-'+fld+' .tl-strip')
     }
 
-    module.add_strip_plot=function(domSel,  data) {
+    module.add_strip_plot=function(domSel,fld,physData,rx ) {
+ //    if(rx) {
+	//     rx=rx.toUpperCase();
+	// } else {
+	//     rx='';
+	// }
+
 	console.log("getting the histogram chart!!");
-	Create_Strip_Plot(domSel,'AmountOfPaymentUSDollarsAgg',100, data[0]);
+	var strip=module.strip_data[fld];
+	var col=module._fldColumns[fld];
+	console.log("phys",physData, "strip",strip);
+	Create_Strip_Plot(domSel,col,100,strip, rx, physData.name.concat(" ",physData.lastName));
 
 	return module;
     }
@@ -235,7 +243,7 @@ var tableLens=(function(module) {
 	module.init_dom(phys_data);
 
 	// Load main charts
-	module.main_data_promise=module.get_main_data(phys_data.physId,phys_data.spec)
+	module.main_data_promise=module.get_main_data(phys_data)
 	    .done(function(){
 		console.log("Got main table data for", phys_data.physId, ":", data);
 
