@@ -168,14 +168,13 @@ GROUP BY PhysicianProfileID
 ORDER BY Count ASC;'''.format(where=where, column=column), generateArray) 
 
 @app.route('/stripTable/<column>/<specialty>')
-@app.route('/stripTable/<column>/<specialty>/<drug>')
-def stripTable(column,specialty,drug=None):
+def stripTable(column,specialty):
     # if 'real' not in request.values:
     #     return send_from_directory('../json', 'Hover_Table_Lens_Data.json')
-    if drug:
-        whereDrug="and NameOfAssociatedCoveredDrugOrBiological1='{drug}'".format(drug=drug)
-    else:
-        whereDrug=''
+    # if drug:
+    #     whereDrug="and NameOfAssociatedCoveredDrugOrBiological1='{drug}'".format(drug=drug)
+    # else:
+    #     whereDrug=''
 
     return doQuery('''SELECT
     PhysicianProfileID                            AS Physician,
@@ -187,7 +186,7 @@ def stripTable(column,specialty,drug=None):
 
 FROM OpenPaymentPrescrJoin4
 WHERE PhysicianSpecialty LIKE "%%{specialty}%%"  {whereDrug} 
-GROUP BY Physician, RxNDC;'''.format(column=column,specialty=specialty,whereDrug=whereDrug),generateArray)
+GROUP BY Physician, RxNDC;'''.format(column=column,specialty=specialty),generateArray)
 
 
 # Static file paths:
