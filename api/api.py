@@ -3,9 +3,10 @@ from flask import Flask, Response, request, send_from_directory
 from flask.ext.compress import Compress
 from flask.ext.cors import CORS
 
-import ujson as json
-import sqlalchemy
 import numpy as np
+import sqlalchemy
+import sys
+import ujson as json
 
 app=Flask('w209dbapi')
 Compress(app)
@@ -28,7 +29,7 @@ def robots():
 def favicon():
         return send_from_directory(
             '../images',
-            'favicon.png',
+            'rx.png',
             mimetype='image/png')
 
 
@@ -48,6 +49,7 @@ def generateDict(query):
                     pfx=','
     except Exception,e:
         err=',"error":' + json.dumps(str(e))
+        print >>sys.stderr, e
     finally:
         yield ']'+err+'}\n'
 
@@ -100,7 +102,7 @@ def specialties():
 @app.route('/ziploc/<zipcode>')
 def ziploc(zipcode, generate=generateDict):
     resp='';
-    query="""SELECT CONCAT('{"lat":', ST_Y(loc), ',"lng":', ST_X(loc),'}') AS latlng FROM ZipLoc WHERE """;
+    query="""SELECT ST_AsWKT(loc) AS latlng FROM ZipLoc WHERE """;
     query+='zip={};'.format(zipcode)
     for ext in generate(query):
         resp += ext;
@@ -123,7 +125,8 @@ def mainTable(physician=None):
     NDCOfAssociatedCoveredDrugOrBiological1       AS RxNDC,
     SUM(TotalClaimCountAgg)                       AS RxCnt,
     SUM(NumberOfPaymentsIncludedInTotalAmountAgg) AS PmntCnt,
-    SUM(AmountOfPaymentUSDollarsAgg)              AS PmntTot
+    SUM(AmountOfPaymentUSDollarsAgg)              AS PmntTot,
+    PhysicianSpecialty                            AS Specialty
 FROM OpenPaymentPrescrJoin4
 {where}
 GROUP BY Rx
@@ -163,6 +166,27 @@ FROM OpenPaymentPrescrJoin4
 {where}
 GROUP BY PhysicianProfileID
 ORDER BY Count ASC;'''.format(where=where, column=column), generateArray) 
+
+@app.route('/stripTable/<column>/<specialty>')
+def stripTable(column,specialty):
+    # if 'real' not in request.values:
+    #     return send_from_directory('../json', 'Hover_Table_Lens_Data.json')
+    # if drug:
+    #     whereDrug="and NameOfAssociatedCoveredDrugOrBiological1='{drug}'".format(drug=drug)
+    # else:
+    #     whereDrug=''
+
+    return doQuery('''SELECT
+    PhysicianProfileID                            AS Physician,
+    NameOfAssociatedCoveredDrugOrBiological1      AS Rx,
+    NDCOfAssociatedCoveredDrugOrBiological1       AS RxNDC,
+
+    SUM(coalesce({column},0))                       as Count
+
+
+FROM OpenPaymentPrescrJoin4
+WHERE PhysicianSpecialty LIKE "%%{specialty}%%"  
+GROUP BY Physician, RxNDC;'''.format(column=column,specialty=specialty),generateArray)
 
 
 # Static file paths:

@@ -3,11 +3,6 @@
     padding-top: 1em;
 }
 
-.ps-entry {
-    display: block;
-    width: 49%;
-}
-
 .ps-progress-spinner {
     display: none;
     height: 32;
@@ -20,15 +15,30 @@
 }
 .ps-filter {
     display: inline-block;
+
+}
+.ps-filter label {
+    text-align: right;
+    display: inline-block;
+    width: 14%;
+    padding-right: 1% 
 }
 
-.ps-filter {
-    display: inline-block;
-    width: 49%;
+.ps-filter select {
+    width: 100%;
 }
-.ps-filter select,input {
+.ps-filter input {
     display: inline-block;
-    width: 75%;
+    width: 85%;
+}
+
+.ps-filter input[type=checkbox] {
+    display: inline-block;
+    width: auto;
+}
+
+.ps-filter .ps-autocomplete {
+    width: 100%;
 }
 
 .ps-status-warn {

@@ -1,24 +1,37 @@
-/* Each tl-column is an "inline-block", so we can use block styling in
-them, but they will be laid out horizontally like inline content
-(text, spans, etc.); i.e., the box have have rows inside, but will be
-packed to fill rows in its containing box. */
-.tl-column {
-    display: inline-block;
-    width: 45%;
-    padding: 1%;
+.tl-container {
+    position: relative;
 }
 
-.tl-chart rect {
-    fill: #62b5d1;
+.tl-container .background {
+  position: absolute;
+  left: 0px;
+  top: 0px;
+  width: 1000px;
+  height: 1000px;
+
 }
 
-/* set the container for the hover tooltip. */
-#tl-tooltip {
-    opacity: 0; /* overridden by js */
+/*set the containers for the two charts that make up the table lens.*/
+.tl-container .container_chart1 {
+  position: absolute;
+  left: 0px;
+  top: 150px;
+  width: 400px;
+}
+.tl-container .container_chart2{
+  position: absolute;
+  left: 500px;
+  top: 150px;
+  width: 400px;
+}
+
+
+/*set the container for the hover tooltip.*/
+.tl-container div.tooltip {	
     position: absolute;			
-    text-align: center;
-    width: 200px;					
-    height: 90px;					
+    text-align: center;			
+    width: 215px;					
+    height: 105px;					
     padding: 2px;				
     font: 12px sans-serif;		
     background: white;	
@@ -30,21 +43,27 @@ packed to fill rows in its containing box. */
     z-index:5;			
 }
 
+/*set the container for the strip plots.*/
+.tl-container .container_stripPlot1 {
+  position: absolute;
+  left: 0px;
+  width: 400px;
+}
+.tl-container .container_stripPlot2{
+  position: absolute;
+  left: 500px;
+  width: 400px;
+}
 
 /*css for the strip plot axis.*/
-.tl-strip-axis path,line {
+.tl-container .axis path,
+.tl-container .axis line {
     fill: none;
     stroke: none;
     shape-rendering: crispEdges;
 }
 
-.tl-strip-axis text {
+.tl-container .axis text {
     font-family: sans-serif;
     font-size: 11px;
-}
-
-.tl-rxlabel,.tl-quantlabel {
-    font-family: sans-serif;
-    font-size: 15px;
-    fill: black;
 }
