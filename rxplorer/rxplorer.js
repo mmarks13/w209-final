@@ -18,7 +18,7 @@ function activate_table_lens(physician) {
     console.log('Creating table lens for', physician);
     var sel=$('#rx-table-lens');
     select_tab(sel);
-    tableLens.init(sel, physician);
+    tableLens.init(sel[0], physician);
 }
 
 function activate_physician_selector() {

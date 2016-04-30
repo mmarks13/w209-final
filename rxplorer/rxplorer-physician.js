@@ -156,7 +156,9 @@ var physician=(function(module) {
 	    if (ev.target.value) {
 		$.getJSON('http://169.53.15.199:20900/ziploc/'+`${ev.target.value}`)
 		    .done(function(latlng){
-			map.setZipMarker(latlng, ev.target.value);
+			var wkt = new Wkt.Wkt();
+			wkt.read(latlng);
+			map.setZipMarker(wkt.toObject(), ev.target.value);
 		    });
 	    } else {
 		map.clearZipMarker();		
@@ -193,13 +195,14 @@ var physician=(function(module) {
 	});
 	
 	// And make sure we have a sane limit
-	module.filter_sel.find('.ps-filter [name="limit"]').value=1000;
+	filters.find('[name="limit"]').val(1000);
 	return module;
     }
     module.get_filters=function(){
 	var ret={
 	    specialties:[],
-	    name:{}
+	    name:{},
+	    bbox: map.map.getBounds()
 	};
 	var sel=module.filter_sel.find('.ps-filter [name="specialties"] :selected');
 	sel.each(function(count, elt){
@@ -339,8 +342,6 @@ var physician=(function(module) {
 	module.reset_debug_data();
 	module.reset_results_table();
 	map.reset();
-	map.reset();
-	sql.limit(module.filter_sel.find('.ps-filter [name="limit"]')[0].value);
     }
 
     module.make_physician_marker_msg=function(row) {
@@ -356,7 +357,7 @@ var physician=(function(module) {
         	   msg+='no lat/lon geolocation</br>';
            }
         }
-        msg+=`<input type='button' name='Show payment/rx details' onclick='physician._marker_cb && physician._marker_cb()' />
+        msg+=`<input type='button' value='Show payment/rx details' onclick='physician._marker_cb && physician._marker_cb()' />
             </div>`;
 	return msg;
     }
