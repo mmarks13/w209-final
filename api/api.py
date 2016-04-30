@@ -102,7 +102,7 @@ def specialties():
 @app.route('/ziploc/<zipcode>')
 def ziploc(zipcode, generate=generateDict):
     resp='';
-    query="""SELECT CONCAT('{"lat":', ST_Y(loc), ',"lng":', ST_X(loc),'}') AS latlng FROM ZipLoc WHERE """;
+    query="""SELECT ST_AsWKT(loc) AS latlng FROM ZipLoc WHERE """;
     query+='zip={};'.format(zipcode)
     for ext in generate(query):
         resp += ext;
@@ -186,7 +186,7 @@ def stripTable(column,specialty):
 
 FROM OpenPaymentPrescrJoin4
 WHERE PhysicianSpecialty LIKE "%%{specialty}%%"  
-GROUP BY Physician, RxNDC;'''.format(column=column,specialty=specialty))
+GROUP BY Physician, RxNDC;'''.format(column=column,specialty=specialty),generateArray)
 
 
 # Static file paths:
