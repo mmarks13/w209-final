@@ -1,14 +1,18 @@
 var physician=(function(module) {
+	console.log("Function physician.js var physician=(function(module)")
     module.init=function(filter_sel, results_sel) {
 	module.filter_sel=filter_sel
 	    .empty();
 	module.results_sel=results_sel
 	    .empty();
+	var text_explanation=$('<div>')
+	    .addClass('rx-text_explanation');
+	module.add_controls(text_explanation);
+
 	// left column for controls
 	var lcol=$('<div>')
 	    .addClass('rx-column');
 	module.filter_sel.append(lcol);
-	module.add_controls(lcol);
 	module.add_filters(lcol);
 	var rcol=$('<div>')
 	    .addClass('rx-column');
@@ -26,23 +30,9 @@ var physician=(function(module) {
     // and plug in events to respond to them.
     module.add_controls=function(sel) {
 	// draw the control bar
-	sel.append($('<h4>')
-		   .addClass('rx-subheading')
-		   .text('Search controls'));
-	sel.html(
-	    `<div class='ps-controls'>
-		<h3 class='rx-heading'>Find your doctors: </h3>
-		<button class='ps-refresh'>Retrieve providers</button>
-		<button class='ps-reset' type='reset'>Reset</button>
-		<img    class='ps-progress-spinner' src='progress.gif' />
-	    </div>`);
+	sel.append(`<h3 class='rx-heading'>Look for one doctor or as many as you want. Physician RxPlorer will return a list of physicians for whatever criteria you enter below. </h3>`);
 	// attach event callbacks
-	sel.find('.ps-refresh').on('click', function(){
-	    module.update_providers();
-	});
-	sel.find('.ps-reset').on('click', function(){
-	    module.reset();
-	});
+
     }
 
     // Status indicator controls routines
@@ -118,36 +108,46 @@ var physician=(function(module) {
     // events to send changes to the sql module.
     module.add_filters=function(sel) {
 	sel.append(`<fieldset class='ps-filters'>
-	      <legend class='rx-heading'>Search Filters</legend>
+	      
 	      <fieldset class='ps-filter'>
-	        <legend class='rx-subheading'>Specialty</legend>
-		   <div>
-		       Select specialties from the list. <br />
-		       You can select multiple items with ctrl-click.</div>
-                <input class='ps-autocomplete' placeholder='See matching specialties' name='specialties' size='64'/>
-                <select class='ps-filter' name='specialties' multiple=''>
-	        </select>
-	      </fieldset>
-	      <fieldset class='ps-filter'>
-                <legend class='rx-subheading'>Name</legend>
-	        <div>Letter case does not affect the search results, but only exact spelling matches are returned.</div>
-	        <label for='name-last'>Last</label><input name='name-last' size='32'/><br />
-	        <label for='name-first'>First</label><input name='name-first' size='32'/><br />
-	        <label for='name-middle'>Middle</label><input name='name-middle' size='32'/><br />
-	        <label for='name-sfx'>Suffix</label><input name='name-sfx' size='5'/><br />
- 	      </fieldset>
-	      <fieldset class='ps-filter'>
-	        <legend class='rx-subheading'>Location</legend>
+		  <div class='star_header'>
+			<span class='star_span'>
+				&#9733
+			</span>			
+		  </div>  
+	        <div><div class = 'star_header_text'> Name	</div>  
+	        <label for='name-last'>Last</label><input name='name-last' size='80'/><br />
+	        <label for='name-first'>First</label><input name='name-first' size='80'/><br />
+<div><br></div>
+			<div class='star_header'>
+			<span class='star_span'>
+				&#9733
+			</span>			
+		  </div>  
+			<div class = 'star_header_text'> Location	</div>  
 	        <label for='addr'>Address</label><input name='addr' size='80'/><br />
 	        <label for='city'>City</label><input name='city' size='80'/><br />
 	        <label for='state'>State</label><input name='state' size='80'/><br />
 	        <label for='zip'>ZIP</label><input name='zip' size='5' maxlength='5'/><br />
- 	      </fieldset>
-	      <fieldset class='ps-filter'>
-	        <legend class='rx-subheading'>Special</legend>
-	        <label for='limit'>Limit</label><input name='limit' value='1000' maxlength='6' size='80'/><br/>
+	        <div><br></div>
+			<div class='star_header'>
+			<span class='star_span'>
+				&#9733
+			</span>			
+		    </div>  
+			<div class = 'star_header_text'> Specialty</div>
+		    
+                <input class='ps-autocomplete' placeholder='See matching specialties' name='specialties' size='30'/>
+                <select class='ps-filter_specialty' name='specialties' multiple=''>
+	        </select>
+			<div>Tip: You can select multiple specialties with Ctrl+click.</div>
+	        <div><br></div>
+
 	        <label for='debug'>Debug</label><input name='debug' type='checkbox' />
-	      </fieldset>
+		  <div><br></div>
+		  <div><br></div>
+		  <div class='star_header_text'><button type='reset' class='ps-reset' >Reset</button></div>
+		  </fieldset>
 	    </fieldset>`);
 	
 	//Load physician specialties list
@@ -231,6 +231,22 @@ var physician=(function(module) {
 		   .addClass('ps-filters'));
 	console.log('Setting up map');
 	map.init(sel[0].getElementsByClassName('ps-map')[0]);
+	sel.append('<div><br></div>');
+	sel.append(`<fieldset class='ps-filters'>	      
+	      <fieldset class='ps-filter'>
+		  <div>
+	<button type="submit" class='ps-refresh'>Retrieve providers</button>	
+	<img class='ps-progress-spinner' src='progress.gif' />	
+	</fieldset>
+	<div><br></div>
+	<label for='limit'>Max Results </label><input name='limit' value='1000' maxlength='6' size='10'/><br/>
+	    </fieldset>`);
+		sel.find('.ps-refresh').on('click', function(){
+	    module.update_providers();
+	});
+	sel.find('.ps-reset').on('click', function(){
+	    module.reset();
+	});
     };
     module.marker_cb=function(_) {
         if(arguments.length>0) {
@@ -265,6 +281,8 @@ var physician=(function(module) {
                   <th>City</th>
                   <th>State</th>
                   <th>Zip</th>
+                  <th>Total_Pmt_Received</th>
+                  <th>TotalClaimCountAgg</th>
                 </tr>
               </thead>
               <tbody class='ps-table-body'>
@@ -283,7 +301,9 @@ var physician=(function(module) {
 		{data: 'addr'},
 		{data: 'city'},
 		{data: 'state'},
-		{data: 'zip'}
+		{data: 'zip'},
+		{data: 'Total_Pmt_Received'},
+		{data: 'TotalClaimCountAgg'}		
            ]});
 
     }

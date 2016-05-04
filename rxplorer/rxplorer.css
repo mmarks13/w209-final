@@ -6,6 +6,10 @@
     display: inline-block;
 }
 
+.rx-text_explanation {
+    max-width: 100%;
+    display: inline-block;
+}
 /* make headings more uniform */
 h1,h2,h3,h4,h5,h6 {
     font-family: sans;
@@ -18,6 +22,7 @@ h2,.rx-subtitle {
     font-size: x-large;
     font-style: oblique;
     padding-bottom: 1em;
+    font-color:#2c3e50;
 }
 h3,.rx-heading {
     font-weight: 500;
@@ -27,6 +32,7 @@ h3,.rx-subheading {
     font-weight: 500;
     font-size: medium;
     font-style: oblique;
+    
 }
 .rx-tab-header {
     display: inline-block;
@@ -59,3 +65,27 @@ h3,.rx-subheading {
     font-size: 11px;
 }
 
+
+.star_header {
+width: 50%; 
+height: 20px; 
+border-bottom: 1px solid #2c3e50; 
+text-align: center; 
+margin: 0 auto;
+
+}
+
+.star_span {
+font-size: 20px; 
+background-color: white; 
+padding: 0 10px;
+}
+
+.star_header_text {
+font-size: 20px; 
+font-color: #2c3e50; 
+margin: 5px;
+text-align: center; 
+}
+
+	

@@ -12,8 +12,16 @@
 .ps-filters {
     padding-top: 1em;
     display: block;
+    border-color: white;
+    border: 0;
 }
 .ps-filter {
+    display: inline-block;
+    border-color: white;
+    border: 0;
+}
+
+.ps-filter_specialty{
     display: inline-block;
 
 }
@@ -56,3 +64,28 @@
 .ps-results {
     display: block;
 }
+
+
+.ps-refresh {
+  padding:5px;
+ color: #2c3e50;
+ background-color: #18bc9c;
+  border: 5px outset #2c3e50;
+  text-decoration:none;
+  font-color: #2c3e50;
+  font-size: 300%;
+text-align: center; 
+margin: 0 auto;
+}    
+
+.ps-reset {
+  padding:5px;
+ color: #2c3e50;
+ background-color: #18bc9c;
+  border: 1px outset #2c3e50;
+  text-decoration:none;
+  font-color: #2c3e50;
+display: inline-block;
+text-align: center; 
+margin: 0 auto;
+}    
