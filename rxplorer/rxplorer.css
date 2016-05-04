@@ -31,15 +31,15 @@ h3,.rx-subheading {
 .rx-tab-header {
     display: inline-block;
     width: 10%;
-    border: 1px solid black;
-    background-color: #FFAAFF;
+    border: 1px solid #2c3e50;
+    background-color: #24e3be;
 }
 .rx-tab-header.rx-tab-inactive {
-    background-color: #CC88CC;
+    background-color: #18bc9c;
 }
 .rx-tab-strip {
     width: 100%;
-    border-bottom: 1px solid black;
+    border-bottom: 1px solid #2c3e50;
 }
 
 .rx-hidden {
