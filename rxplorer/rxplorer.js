@@ -1,4 +1,5 @@
 function select_tab(sel) {
+    console.log("Function select_tab")
     $('.rx-tab').addClass('rx-hidden');
     $('.rx-tab-header').addClass('rx-tab-inactive');
     sel=$(sel);
@@ -14,7 +15,7 @@ function select_tab(sel) {
     hdr.removeClass('rx-tab-inactive');
 }
 
-function activate_table_lens(physician) {
+function activate_table_lens(physician) {    
     console.log('Creating table lens for', physician);
     var sel=$('#rx-table-lens');
     select_tab(sel);
@@ -22,11 +23,13 @@ function activate_table_lens(physician) {
 }
 
 function activate_physician_selector() {
+    console.log("Function activate_physician_selector")
     var sel=$('#rx-physician-filter');
     select_tab(sel);
 }
 
 $(document).ready(function(){
+    console.log("Function $(document).ready")
     var filter_sel=$('#rx-physician-filter');
     select_tab(filter_sel);
     physician.init(filter_sel, $('#rx-physician-results'));

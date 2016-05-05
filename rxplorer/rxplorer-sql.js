@@ -85,12 +85,15 @@ var sql=(function(module){
         PhysicianProfileState AS state,
         Zip5 AS zip,
         ST_AsWKT(Coords) AS latLng,
-        ST_AsWKT(loc) AS zipLatLng
-        FROM PhysicianProfileSupplement
+        ST_AsWKT(loc) AS zipLatLng,
+        Total_Pmt_Received,
+        TotalClaimCountAgg
+        FROM PhysicianProfileSupplementJoin4
         INNER JOIN GeolocatedAddresses on GeolocAddrID=ID
         INNER JOIN ZipLoc on zip=Zip5
 
         ${module.make_where(opts)}
+        order by Total_Pmt_Received desc
         ${opts.limit?'LIMIT '+opts.limit.toString():''};`;
     }
 
