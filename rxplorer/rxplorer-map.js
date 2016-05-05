@@ -3,7 +3,7 @@ var map=(function(module){
     //draw a map using the provided selector.
     module.init = function(selector_string) {
 	var mapnode=$(selector_string);
-	mapnode.css('height', 0.75*mapnode[0].getBoundingClientRect().width);
+	mapnode.css('height', 1*mapnode[0].getBoundingClientRect().width);
 	// We avoid calling Leaflet until init-time (document ready) since
 	// some of the calls do not appear to work.
     	// TODO: figure these out and run more code at load time if possible

@@ -60,11 +60,27 @@
 
 .ps-map {
     display: block;
+    width: 70%;
+    text-align: center; 
+    margin: 0 auto;
+    border:5px solid #2c3e50
 }
 .ps-results {
     display: block;
 }
 
+.ps-text1 {
+    font-size:15;
+    color: #2c3e50;
+    font-style: italic;
+    text-align: center; 
+}
+
+.ps-text2 {
+    font-size:16;
+    color: #2c3e50;
+    text-align: center; 
+}
 
 .ps-refresh {
   padding:5px;

@@ -1,5 +1,4 @@
 var physician=(function(module) {
-	console.log("Function physician.js var physician=(function(module)")
     module.init=function(filter_sel, results_sel) {
 	module.filter_sel=filter_sel
 	    .empty();
@@ -7,6 +6,7 @@ var physician=(function(module) {
 	    .empty();
 	var text_explanation=$('<div>')
 	    .addClass('rx-text_explanation');
+	module.filter_sel.append(text_explanation);
 	module.add_controls(text_explanation);
 
 	// left column for controls
@@ -15,7 +15,7 @@ var physician=(function(module) {
 	module.filter_sel.append(lcol);
 	module.add_filters(lcol);
 	var rcol=$('<div>')
-	    .addClass('rx-column');
+	    .addClass('rx-column_map');
 	module.filter_sel.append(rcol)
 	module.add_map(rcol);
 
@@ -29,8 +29,10 @@ var physician=(function(module) {
     // Append submit/reset/progress and up-to-date indicators under the provided selector,
     // and plug in events to respond to them.
     module.add_controls=function(sel) {
-	// draw the control bar
-	sel.append(`<h3 class='rx-heading'>Look for one doctor or as many as you want. Physician RxPlorer will return a list of physicians for whatever criteria you enter below. </h3>`);
+		console.log('module.add_controls=function(sel)')
+	sel.append($('<div>')
+		.html(`Look for one doctor or as many as you want. Physician RxPlorer will return a list of physicians for whatever criteria you enter below.`)
+		.addClass('rx-text_explanation'));
 	// attach event callbacks
 
     }
@@ -222,15 +224,19 @@ var physician=(function(module) {
 
     
     module.add_map=function(sel) {
-	sel.append($('<h4>')
-		   .addClass('rx-subheading')
-		   .text('Filtering map'));
-	sel.append($('<div>').html('Zooming and panning in this map limits the search to the shown region.<br />\n<em>Tip</em>: Shift-and-drag lets you quickly zoom in on a rectangular area.'));
+	sel.append(`<div class='star_header'>
+			<span class='star_span'>
+				&#9733
+			</span>			
+		    </div>  
+			<div class = 'star_header_text'> Search Area </div>`);
+	sel.append($('<div>').html('Limit the search area by changing the map below').addClass('ps-text2'));
 	sel.append($('<div>')
 		   .addClass('ps-map')
 		   .addClass('ps-filters'));
 	console.log('Setting up map');
 	map.init(sel[0].getElementsByClassName('ps-map')[0]);
+	sel.append($('<div>').html('Tip: Shift+Click Drag allows you to quickly select an area').addClass('ps-text1'));
 	sel.append('<div><br></div>');
 	sel.append(`<fieldset class='ps-filters'>	      
 	      <fieldset class='ps-filter'>
