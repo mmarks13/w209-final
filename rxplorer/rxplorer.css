@@ -4,6 +4,7 @@
 .rx-column {
     max-width: 48%;
     display: inline-block;
+    padding-left: 1.5cm
 }
 .rx-column_map {
     max-width: 48%;
@@ -18,6 +19,7 @@
     font-color: #2c3e50; 
     padding-top: 10px;
     padding-bottom: 10px;
+    margin-left: .5cm
 }
 /* make headings more uniform */
 h1,h2,h3,h4,h5,h6 {
@@ -45,10 +47,12 @@ h3,.rx-subheading {
 }
 .rx-tab-header {
     display: inline-block;
-    width: 10%;
-    border: 1px solid #2c3e50;
+    width: 15%;
+    border: 3px solid #2c3e50;
     background-color: #24e3be;
     text-align: center; 
+    border-radius: 3
+    
 }
 .rx-tab-header.rx-tab-inactive {
     background-color: #18bc9c;
@@ -56,7 +60,8 @@ h3,.rx-subheading {
 }
 .rx-tab-strip {
     width: 100%;
-    border-bottom: 1px solid #2c3e50;
+    border-bottom: 5px solid #2c3e50;
+    margin-left: 1cm
 }
 
 .rx-hidden {

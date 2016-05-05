@@ -269,12 +269,10 @@ var physician=(function(module) {
 
         
     module.add_results=function(sel) {
-	sel.append($(`<h3 class='rx-heading'>Search Results</h3>
-	  <div>After searching, use this table to navigate the results.<br />
-	    The search box on the right lets you filter the results based on their contents.<br />
-	    Click on any row to examine payment/prescription details.
-  	  </div>
-          <div class='ps-results'>
+	sel.append($(`
+	  <div>Click on a provider to visualize their pharmaceutical company payment and drug prescription relationship</div>
+          <div><br></div>
+		  <div class='ps-results'>
             <div class='ps-rowcount'></div>
             <pre class='ps-error-msg'></pre>
             <table class='ps-table'>
