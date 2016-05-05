@@ -600,10 +600,7 @@ var tableLens=(function(module) {
 	sel=d3.select(dom_sel);
 	sel.selectAll('*').remove();
 	sel.classed('tl-container', true);
-	sel.append('div')
-	    .classed('background',true)
-	    .classed('tl-background_svg', true);
-	
+
 	// add the divs for the strip plots above the plot titles. This will
 	// allow the two plots to share the title text
 	sel.append('div')
@@ -617,16 +614,18 @@ var tableLens=(function(module) {
 	sel.append('div')
 	    .classed('container_chart1',true)
 	    .classed('tl-chart1', true)
-	    .append('h4')
+		.classed('tl-titles', true)
 	    .attr('align','center')
-	    .text('Value of Goods/Money Received from Pharmaceutical Companies Concerning Their Products');
-
+		.attr('display','table')
+	    .html('<div class ="tl-titles">Value of Goods/Money Received from Pharmaceutical Companies Concerning Their Products</div>');
+		
 	sel.append('div')
 	    .classed('container_chart2',true)
 	    .classed('tl-chart2', true)
-	    .append('h4')
+		.classed('tl-titles', true)
 	    .attr('align','center')
-	    .text('Medicare Prescriptions Written - 2013');
+		.attr('display','table')
+	    .html('<div class ="tl-titles">Medicare Prescriptions Written - 2013</div>');
 	return sel;
     }
     return module;

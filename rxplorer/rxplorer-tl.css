@@ -2,27 +2,18 @@
     position: relative;
 }
 
-.tl-container .background {
-  position: absolute;
-  left: 0px;
-  top: 0px;
-  width: 1000px;
-  height: 1000px;
-
-}
-
 /*set the containers for the two charts that make up the table lens.*/
 .tl-container .container_chart1 {
   position: absolute;
   left: 0px;
-  top: 150px;
   width: 400px;
+  top: 120px;
 }
 .tl-container .container_chart2{
   position: absolute;
   left: 500px;
-  top: 150px;
   width: 400px;
+  top: 120px;
 }
 
 
@@ -43,16 +34,34 @@
     z-index:5;			
 }
 
+.tl-titles {
+  display: table-cell; vertical-align: middle;
+  font-family: Montserrat,"Helvetica Neue",Helvetica,Arial,sans-serif;
+  font-weight: 700;
+  font-size:14;
+  color: #2c3e50;
+  height:60px;
+}
+
 /*set the container for the strip plots.*/
 .tl-container .container_stripPlot1 {
   position: absolute;
   left: 0px;
   width: 400px;
+  margin-bottom:0px;
+  padding-bottom:0px;
+  margin-top:10px;
+  padding-top:10px;
 }
+
 .tl-container .container_stripPlot2{
   position: absolute;
   left: 500px;
   width: 400px;
+  margin-bottom:0px;
+  padding-bottom:0px;
+  margin-top:10px;
+  padding-top:10px;
 }
 
 /*css for the strip plot axis.*/
